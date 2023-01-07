@@ -191,3 +191,34 @@ class LabelSmooth(nn.Module):
         epilon = x.sum() * smooth_factor / ( (1.0-x).sum() + 1e-6)
         x = x * (1.0 - smooth_factor) + (1.0 - x) * epilon
         return x
+
+class LocalWindowTripleLoss(nn.Module):
+    def __init__(self, d_in, d_out=256, alpha=0.01):
+        super().__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(d_in, d_out, 1),
+            nn.BatchNorm2d(d_out),
+            nn.ReLU(),
+            nn.Conv2d(d_out, d_out, 1)
+        )
+        self.unfold = UnFold(11, dilation=1, padding=0, stride=5)
+        self.alpha = alpha
+
+    def forward(self, map, feat, margin=0.5):
+        m = F.interpolate(map, size=feat.shape[2::], mode="bilinear").gt(0.5).float()
+        feat = self.conv(feat) ## b,c,h,w
+        mu = self.unfold(m) ## b,1,w_s,h,w
+        fu = self.unfold(feat) ## b,c,w_s,h,w
+        pos_cnt = torch.sum(mu, dim=2, keepdim=True)
+        neg_cnt = torch.sum(1.0 - mu, dim=2, keepdim=True)
+        valid = ((pos_cnt > 0.5) * (neg_cnt > 0.5)).float().detach()
+
+        pc = torch.sum(mu * fu, dim=2, keepdim=True) / (pos_cnt + 1e-6) ## b,c,1,h,w
+        nc = torch.sum((1.0-mu) * fu, dim=2, keepdim=True) / (neg_cnt + 1e-6) ## b,c,1,h,w
+        dist_pc = 1.0 - torch.exp(-self.alpha*torch.sum(torch.pow(pc - fu, 2.0), dim=1, keepdim=True)) ## b,1,w_s,h,w
+        dist_nc = 1.0 - torch.exp(-self.alpha*torch.sum(torch.pow(nc - fu, 2.0), dim=1, keepdim=True)) ## b,1,w_s,h,w
+        pos_dist = torch.where(mu>0.5, dist_pc, dist_nc) ## b,1,w_s,h,w
+        neg_dist = torch.where(mu>0.5, dist_nc, dist_pc) ## b,1,w_s,h,w
+        triple = torch.maximum(pos_dist - neg_dist + margin, torch.zeros_like(pos_dist)) ## b,1,w_s,h,w
+        loss = torch.sum(triple * valid, dim=[3,4]) / (torch.sum(valid, dim=[3,4]) + 1e-6)
+        return loss.mean()

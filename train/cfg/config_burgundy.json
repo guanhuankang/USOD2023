@@ -1,17 +1,18 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_burgundy.json",
+  "snapShot": "",
+  "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
+  "evalPath": "results/",
+  "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
-  "testSet": ["DUTS"],
+  "testSet": "DUTS",
   "eventPath": "./event",
-  "evalPath": "results/s521",
 
-  "backboneWeight": "/home/huankguan2/scratch/usod/dino_resnet50_pretrain.pth",
   "name": "burgundy",
-
-  "crf": true,
   "d_model": 512,
   "n_head": 8,
   "d_ff": 1024,
+  "crf": false,
 
   "mean": [124.55, 118.90, 102.94],
   "std": [ 56.77,  55.97,  57.50],
@@ -20,7 +21,7 @@
   "lr": 0.001,
   "momentum": 0.9,
   "weightDecay": 5e-4,
-  "epoch": 15,
-  "epoch_lr_delay": 10,
+  "epoch": 20,
+  "epoch_lr_delay": 18,
   "numWorkers": 4
 }
