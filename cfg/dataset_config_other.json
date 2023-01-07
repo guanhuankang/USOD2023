@@ -1,0 +1,113 @@
+{
+    "DUT-OMRON": {
+        "root": "/home/huankguan2/scratch/dataset/sod/DUT-OMRON",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUT-OMRON/DUT-OMRON-image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUT-OMRON/pixelwiseGT-new-PNG",
+            "suffix": ".png"
+        }
+    },
+    "DUTS": {
+        "root": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Mask",
+            "suffix": ".png"
+        }
+    },
+    "DUTS-TR": {
+        "root": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Mask",
+            "suffix": ".png"
+        }
+    },
+    "ECSSD": {
+        "root": "/home/huankguan2/scratch/dataset/sod/ECSSD",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/ECSSD/images",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/ECSSD/ground_truth_mask",
+            "suffix": ".png"
+        }
+    },
+    "HKU-IS": {
+        "root": "/home/huankguan2/scratch/dataset/sod/HKU-IS",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/HKU-IS/imgs",
+            "suffix": ".png"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/HKU-IS/gt",
+            "suffix": ".png"
+        }
+    },
+    "MSRA-B": {
+        "root": "/home/huankguan2/scratch/dataset/sod/MSRA-B",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/MSRA-B/image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/MSRA-B/mask",
+            "suffix": ".png"
+        }
+    },
+    "PASCAL-S": {
+        "root": "/home/huankguan2/scratch/dataset/sod/Pascal-S",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/Pascal-S/image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/Pascal-S/mask",
+            "suffix": ".png"
+        }
+    },
+    "SOD": {
+        "root": "/home/huankguan2/scratch/dataset/sod/SOD",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/SOD/image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/SOD/mask",
+            "suffix": ".png"
+        }
+    },
+    "SYNSOD": {
+        "root": "/home/huankguan2/scratch/dataset/sod/SYNSOD",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/SYNSOD/image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/SYNSOD/mask",
+            "suffix": ".png"
+        }
+    },
+    "THUR15K-Butterfly": {
+        "root": "/home/huankguan2/scratch/dataset/sod/THUR/THUR15000",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/THUR/THUR15000/Butterfly/image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": "/home/huankguan2/scratch/dataset/sod/THUR/THUR15000/Butterfly/mask",
+            "suffix": ".png"
+        }
+    }
+}
+

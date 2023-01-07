@@ -1,0 +1,28 @@
+{
+  "datasetCfgPath": "../cfg/dataset_config_other.json",
+  "trainSet": "DUTS-TR",
+  "testSet": ["DUTS"],
+  "eventPath": "./event",
+  "evalPath": "results/s521",
+
+  "checkpointPath": "./checkpoint",
+  "snapShot": "D:\\2023ICCVUSOD\\experiment\\CLSaliency\\main\\train\\weights\\model-s521-20-A-no-amp.pth",
+  "backboneWeight": "../res/dino_resnet50_pretrain.pth",
+  "crf": true,
+
+  "name": "other",
+  "d_model": 512,
+  "n_head": 8,
+  "d_ff": 1024,
+
+  "mean": [124.55, 118.90, 102.94],
+  "std": [ 56.77,  55.97,  57.50],
+  "size": [352,352],
+  "batchSize": 3,
+  "lr": 0.001,
+  "momentum": 0.9,
+  "weightDecay": 5e-4,
+  "epoch": 20,
+  "epoch_lr_delay": 18,
+  "numWorkers": 2
+}
