@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from base.resnet50 import ResNet
-from base.frcpn import FrcPN
-from contrastive_saliency import ContrastiveSaliency
-from base.modules import weight_init, CRF, LocalWindowTripleLoss
+from net.base.resnet50 import ResNet
+from net.base.frcpn import FrcPN
+from net.contrastive_saliency import ContrastiveSaliency
+from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
 
 def delayWarmUp(step, period, delay):
     return min(1.0, max(0.0, 1./period * step - delay/period))

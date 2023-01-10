@@ -4,7 +4,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from train.net.base.modules import weight_init, LayerNorm2D
+from net.base.modules import weight_init, LayerNorm2D
 
 KEY = "enc"
 
