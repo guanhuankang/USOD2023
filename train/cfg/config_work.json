@@ -17,7 +17,7 @@
   "mean": [124.55, 118.90, 102.94],
   "std": [ 56.77,  55.97,  57.50],
   "size": [352,352],
-  "batchSize": 4,
+  "batchSize": 2,
   "lr": 0.001,
   "momentum": 0.9,
   "weightDecay": 5e-4,

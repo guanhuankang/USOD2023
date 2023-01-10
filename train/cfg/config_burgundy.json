@@ -1,7 +1,7 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_burgundy.json",
   "snapShot": "",
-  "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
+  "backboneWeight": "/home/huankguan2/scratch/usod/dino_resnet50_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
@@ -22,6 +22,6 @@
   "momentum": 0.9,
   "weightDecay": 5e-4,
   "epoch": 20,
-  "epoch_lr_delay": 18,
+  "epoch_lr_delay": 15,
   "numWorkers": 4
 }
