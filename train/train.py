@@ -48,7 +48,7 @@ def train(cfg):
         for step, (image, mask) in enumerate(loader):
             optimizer.zero_grad()
             image, mask = image.cuda().float(), mask.cuda().float()
-            out = net(image, global_step=global_step/tot_iter, sw=sw)
+            out = net(image, global_step=global_step/tot_iter, sw=sw, epoches=cfg.epoch)
             loss = out["loss"]
 
             loss.backward()
