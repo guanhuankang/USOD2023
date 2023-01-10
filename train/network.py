@@ -41,6 +41,6 @@ if __name__ == "__main__":
     # net.loadCheckPoint(cfg.snapShot)
     net.train()
     # net.eval()
-    out = net(x, global_step = 0.101)
+    out = net(x, global_step = 0.35, epoches=20)
     print("loss",out["loss"])
     print("pred", out["pred"].shape)

@@ -12,11 +12,12 @@ class FRC(nn.Module):
         weight_init(self)
 
     def calcMask(self, ref):
-        ur = self.unfold(ref) ## b,c,w_s,h,w
-        um = torch.mean(ur, dim=2, keepdim=True)
-        pos = (ur - um).gt(0.0).float()
-        ure = (torch.unsqueeze(ref, dim=2) - um).gt(0.0).float() ## stop gradient because of gt
-        mask = ure * pos + (1.0 - ure) * (1.0 - pos) ## b,c,w_s,h,w
+        res = torch.mean(ref, dim=1, keepdim=True) ## b,1,h,w
+        unfold_res = self.unfold(res) ## b,1,w_s,h,w
+        unfold_avg = torch.mean(unfold_res, dim=2, keepdim=True) ## b,1,1,h,w
+        unfold_pos = (unfold_res - unfold_avg).gt(0.0).float() ## stop gradient b,1,w_s,h,w
+        unfold_ind = (torch.unsqueeze(res, dim=2) - unfold_avg).gt(0.0).float() ## b,1,1,h,w
+        mask = unfold_ind * unfold_pos + (1.0 - unfold_ind) * (1.0 - unfold_pos) ## b,1,w_s,h,w
         return mask
 
     def forward(self, x, ref):
@@ -29,17 +30,19 @@ class FrcPN(nn.Module):
     '''
         Cross-Scale Feature Re-Coordinate Pyramid Network
     '''
-    def __init__(self, dim_bin = [2048, 1024, 512, 256, 64]):
+    def __init__(self):
         super().__init__()
-        self.frc = nn.ModuleList([ FRC(f_in, f_out) for f_in, f_out in zip(dim_bin[0:-2], dim_bin[1:-1]) ])
-        self.conv1 = nn.Sequential(nn.Conv2d(dim_bin[-2], dim_bin[-1], 1), nn.BatchNorm2d(dim_bin[-1]), nn.ReLU())
-        self.conv2 = nn.Sequential(nn.Conv2d(dim_bin[-1], dim_bin[-1], 1), nn.BatchNorm2d(dim_bin[-1]), nn.ReLU())
+        d_model = 64
+        self.frc4 = FRC(2048, 1024)
+        self.frc3 = FRC(1024, 512)
+        self.frc2 = FRC(512, 256)
+        self.conv1 = nn.Sequential(nn.Conv2d(256, d_model, 1), nn.BatchNorm2d(d_model), nn.ReLU())
+        self.conv2 = nn.Sequential(nn.Conv2d( 64, d_model, 1), nn.BatchNorm2d(d_model), nn.ReLU())
 
     def forward(self, features):
-        ''' features: f5,f4,f3,f2,f1 '''
-        n = len(features)
-        out = [features[0],]
-        for i in range(n-2):
-            out.append(self.frc[i](out[-1], features[i+1]))
-        out.append( self.conv1(out[-1])+self.conv2(features[-1]) )
-        return out
+        f1, f2, f3, f4, f5 = features
+        c4 = self.frc4(f5, f4)
+        c3 = self.frc3(c4, f3)
+        c2 = self.frc2(c3, f2)
+        c1 = self.conv1(c2) + self.conv2(f1)
+        return [c1, c2, c3, c4, f5]

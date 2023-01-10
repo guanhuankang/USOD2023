@@ -21,7 +21,7 @@
   "lr": 0.001,
   "momentum": 0.9,
   "weightDecay": 5e-4,
-  "epoch": 20,
-  "epoch_lr_delay": 15,
+  "epoch": 40,
+  "epoch_lr_delay": 10,
   "numWorkers": 4
 }

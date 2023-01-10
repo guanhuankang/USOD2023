@@ -35,7 +35,7 @@ def train(cfg):
     net.cuda()
     ## optimizer & logger
     optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=cfg.momentum, weight_decay=cfg.weightDecay)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
     global_step = 0
@@ -43,7 +43,7 @@ def train(cfg):
     tot_iter = cfg.epoch * len(loader)
 
     for epoch in range(cfg.epoch):
-        # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
+        optimizer.param_groups[0]['lr'] = (1.0 - (max(0.0, epoch-cfg.epoch_lr_delay) / (cfg.epoch-cfg.epoch_lr_delay))**0.9) * cfg.lr
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
         for step, (image, mask) in enumerate(loader):
             optimizer.zero_grad()
@@ -67,7 +67,7 @@ def train(cfg):
                       elase / 60, remain / 60), flush=True
                 )
         ## epoch end
-        scheduler.step()
+        # scheduler.step()
         if epoch > cfg.epoch * 0.80 or epoch == int(cfg.epoch//2) or True:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
             torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
