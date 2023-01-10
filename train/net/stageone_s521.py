@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from base.modules import weight_init, LayerNorm2D, CRF
-from base.resnet50fpn import FPN
+from net.base.modules import weight_init, LayerNorm2D, CRF
+from net.base.resnet50fpn import FPN
 from torch.utils.tensorboard import SummaryWriter
 
 KEY = "convLN"
