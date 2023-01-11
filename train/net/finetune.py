@@ -48,13 +48,14 @@ class FineTune(nn.Module):
         y = self.head(f1)
 
         if self.training:
+            size = mask.shape[2::]
             w = [1.0, 1.0, 0.0]
             N = len(x) // 2
             loss_dict = {}
 
-            bceloss = F.binary_cross_entropy_with_logits(y, mask.gt(0.5).float()); loss_dict.update({"bce_loss": bceloss.item()})
+            bceloss = F.binary_cross_entropy_with_logits(uphw(y, size), mask.gt(0.5).float()); loss_dict.update({"bce_loss": bceloss.item()})
             consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
-            iouloss = iouLoss(torch.sigmoid(y), mask); loss_dict.update({"iou_loss": iouloss.item()})
+            iouloss = iouLoss(torch.sigmoid(uphw(y, size=size)), mask); loss_dict.update({"iou_loss": iouloss.item()})
             loss = w[0] * bceloss + w[1] * consloss + w[2] * iouloss; loss_dict.update({"tot_loss": loss.item()})
 
             if "sw" in kwargs:
