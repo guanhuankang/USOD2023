@@ -187,14 +187,17 @@ class SmoothConv(nn.Module):
         return self.conv(x) / 9.0
 
 class LocalWindowTripleLoss(nn.Module):
-    def __init__(self, alpha=10.0):
+    def __init__(self, d_in, alpha=0.01):
         super().__init__()
         self.unfold = UnFold(11, dilation=1, padding=0, stride=5)
         self.alpha = alpha
+        self.conv = nn.Sequential(nn.Conv2d(d_in, 64, 1), nn.InstanceNorm2d(64))
 
-    def forward(self, map, feat, margin=0.5):
-        softmap = F.interpolate(map, size=feat.shape[2::], mode="bilinear")
-        hardmap = F.interpolate(map, size=feat.shape[2::], mode="bilinear").gt(0.5).float() ## stop gradient
+    def forward(self, map, feat, margin=0.5, size=(352,352)):
+        feat = self.conv(feat)
+        feat = F.interpolate(feat, size=size, mode="nearest")
+        softmap = F.interpolate(map, size=size, mode="bilinear")
+        hardmap = F.interpolate(map, size=size, mode="bilinear").gt(0.5).float() ## stop gradient
 
         m = self.unfold(hardmap) ## b,1,w_s,h,w
         valid = ((torch.sum(m, dim=2, keepdim=True) > 0.5) * (torch.sum(1.-m, dim=2, keepdim=True) > 0.5)).float() ## no gradient
