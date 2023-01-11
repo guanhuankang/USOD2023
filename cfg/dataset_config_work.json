@@ -30,6 +30,10 @@
         "mask": {
             "path": "D:\\2023ICCVUSOD\\dataset\\DUTS\\DUTS-TR\\DUTS-TR-Mask",
             "suffix": ".png"
+        },
+        "sal": {
+            "path": "D:\\2023ICCVUSOD\\experiment0107\\main\\train\\A10-DUTS-TR",
+            "suffix": ".png"
         }
     },
     "ECSSD": {
