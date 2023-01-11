@@ -50,10 +50,11 @@ class TestModel:
         resultPd = pd.DataFrame(self.results, index=self.indexs)
         resultPd = pd.concat([resultPd.agg("mean").to_frame(name="mean").T, resultPd], ignore_index=False)
         resultPd.to_csv(os.path.join(self.resultPath, name+".csv"))
-        print(resultPd.head(1))
+        print(resultPd.head(1), flush=True)
         return resultPd
 
     def test(self, tCfg, model, checkpoint=None, name="test", crf=0, save=False):
+        name = name.replace("\\","_").replace("/","_")
         name_now = name+"_"+str(datetime.datetime.now()).replace("-","_").replace(":","_").replace(" ","_")
 
         name_list = [x[0:-len(tCfg.image.suffix)] for x in os.listdir(tCfg.image.path) if x.endswith(tCfg.image.suffix)]
@@ -70,7 +71,7 @@ class TestModel:
         model.eval()
         model.train(False)
         with torch.no_grad():
-            for i,name in enumerate(name_list[0:100]):
+            for i,name in enumerate(name_list):
                 img = transform(Image.open(os.path.join(tCfg.image.path, name+tCfg.image.suffix))).unsqueeze(0)
                 mak = np.array(Image.open(os.path.join(tCfg.mask.path, name+tCfg.mask.suffix)).convert("L")).astype(float) / 255.0
                 mak = torch.tensor(mak).unsqueeze(0).unsqueeze(0).gt(0.5).float()
@@ -97,12 +98,14 @@ if __name__=="__main__":
     tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS
     net = Network(cfg).cuda()
     testModel = TestModel()
+    print(tCfg, flush=True)
 
     ckp_folder = ["A_checkpoint", "B_checkpoint"]
-    ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.ednswith(".pth")]
+    ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
     results = []
     for ckp in ckps:
-        print(ckp, "...")
-        r = testModel.test(tCfg, name=ckp, model=net, save=True, checkpoint=ckp)
+        print(ckp, "...", flush=True)
+        r = testModel.test(tCfg, name=ckp, model=net, save=False, checkpoint=ckp)
         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
-    pd.DataFrame(results).to_csv("results.csv")
+    pd.DataFrame(results).to_csv("output/results.csv")
+    print(pd.DataFrame(results), flush=True)
