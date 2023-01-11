@@ -3,6 +3,8 @@
 
 import datetime
 import time, os
+
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -13,6 +15,7 @@ from dataset import Data
 from common import *
 from network import Network
 from loader import Loader
+from testmodel import TestModel
 
 def iou_loss(pred, mask):
     pred  = torch.sigmoid(pred)
@@ -41,6 +44,9 @@ def train(cfg):
     global_step = 0
     clock_begin = time.time()
     tot_iter = cfg.epoch * len(loader)
+    ## testmodel
+    tCfg = loadConfigByPath(cfg.datasetCfgPath)
+    testResults = []
 
     for epoch in range(cfg.epoch):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
@@ -66,11 +72,19 @@ def train(cfg):
                     %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
                       elase / 60, remain / 60), flush=True
                 )
-        ## epoch end
+        ## epoch end/ start epoch test
         scheduler.step()
-        if epoch > cfg.epoch * 0.80 or epoch == int(cfg.epoch//2) or True:
+        if epoch > cfg.epoch * 0.80 or epoch == int(cfg.epoch//2) or epoch>6:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
             torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
+            with torch.no_grad():
+                r = TestModel().test(tCfg=tCfg.DUTS, model=net, name=cfg.name+str(epoch+1), checkpoint=None, crf=0, save=False)
+                testResults.append({"epoch": epoch+1, "name": cfg.name} | r.head(1).to_dict("records")[0])
+                print(pd.DataFrame(testResults).set_index("epoch").sort_index(), flush=True)
+        ## end epoch test
+    testResults = pd.DataFrame(testResults).set_index("epoch").sort_index()
+    print(testResults, flush=True)
+    testResults.to_csv(cfg.name+"_results.csv")
 
 if __name__=='__main__':
     print(datetime.datetime.now(), "train starts training")
