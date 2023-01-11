@@ -10,6 +10,7 @@ from PIL import Image
 from torchvision import transforms as pth_transforms
 import progressbar
 import pandas as pd
+from net.base.modules import CRF
 
 class TestModel:
     def __init__(self, resultPath="output"):
@@ -17,6 +18,7 @@ class TestModel:
         os.makedirs(resultPath, exist_ok=True)
         self.results = []
         self.indexs = []
+        self.crf = CRF()
 
     def eval(self, pred, mask):
         pred = F.interpolate(pred, size=mask.shape[2::], mode="bilinear")
@@ -53,6 +55,10 @@ class TestModel:
         print(resultPd.head(1), flush=True)
         return resultPd
 
+    def clear(self):
+        self.results = []
+        self.indexs = []
+
     def test(self, tCfg, model, checkpoint=None, name="test", crf=0, save=False):
         name = name.replace("\\","_").replace("/","_")
         name_now = name+"_"+str(datetime.datetime.now()).replace("-","_").replace(":","_").replace(" ","_")
@@ -78,6 +84,10 @@ class TestModel:
 
                 pred = model(img.cuda())["pred"].cpu()
                 pred = F.interpolate(pred, size=mak.shape[2::], mode="bilinear")
+                if crf>0:
+                    ori_img = F.interpolate(img, size=mak.shape[2::], mode="bilinear")
+                    ori_img = (ori_img - ori_img.min()) / (ori_img.max() - ori_img.min() + 1e-6)
+                    pred = self.crf( ori_img, pred, iters=crf )
 
                 result = self.eval(pred, mak)
                 self.record(name, result)
@@ -89,7 +99,9 @@ class TestModel:
 
             bar.finish()
         model.train(mode)
-        return self.report(name_now)
+        rep = self.report(name_now)
+        self.clear()
+        return rep
 
 if __name__=="__main__":
     from common import loadConfig, loadConfigByPath
@@ -100,12 +112,32 @@ if __name__=="__main__":
     testModel = TestModel()
     print(tCfg, flush=True)
 
-    ckp_folder = ["A_checkpoint", "B_checkpoint"]
+    ckp_folder = ["weights"]
     ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
     results = []
     for ckp in ckps:
         print(ckp, "...", flush=True)
-        r = testModel.test(tCfg, name=ckp, model=net, save=False, checkpoint=ckp)
+        r = testModel.test(tCfg, name=ckp, model=net, crf=1, save=True, checkpoint=ckp)
         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
     pd.DataFrame(results).to_csv("output/results.csv")
     print(pd.DataFrame(results), flush=True)
+
+
+# if __name__=="__main__":
+#     from common import loadConfig, loadConfigByPath
+#     from network import Network
+#     cfg = loadConfig()
+#     tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS
+#     net = Network(cfg).cuda()
+#     testModel = TestModel()
+#     print(tCfg, flush=True)
+#
+#     ckp_folder = ["A_checkpoint", "B_checkpoint"]
+#     ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
+#     results = []
+#     for ckp in ckps:
+#         print(ckp, "...", flush=True)
+#         r = testModel.test(tCfg, name=ckp, model=net, save=False, checkpoint=ckp)
+#         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
+#     pd.DataFrame(results).to_csv("output/results.csv")
+#     print(pd.DataFrame(results), flush=True)
