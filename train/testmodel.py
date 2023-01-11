@@ -97,4 +97,12 @@ if __name__=="__main__":
     tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS
     net = Network(cfg).cuda()
     testModel = TestModel()
-    testModel.test(tCfg, name="main_A", model=net, save=True, checkpoint=r"D:\2023ICCVUSOD\experiment0107\main\train\weights\model-20-A.pth")
+
+    ckp_folder = ["A_checkpoint", "B_checkpoint"]
+    ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.ednswith(".pth")]
+    results = []
+    for ckp in ckps:
+        print(ckp, "...")
+        r = testModel.test(tCfg, name=ckp, model=net, save=True, checkpoint=ckp)
+        results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
+    pd.DataFrame(results).to_csv("results.csv")
