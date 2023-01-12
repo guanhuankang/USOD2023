@@ -12,15 +12,16 @@ class FRC(nn.Module):
         weight_init(self)
 
     def calcMask(self, ref):
-        ur = self.unfold(ref) ## b,c,w_s,h,w
+        ref = torch.mean(ref, dim=1, keepdim=True) ## c==1
+        ur = self.unfold(ref) ## b,c=1,w_s,h,w
         um = torch.mean(ur, dim=2, keepdim=True)
         pos = (ur - um).gt(0.0).float()
         ure = (torch.unsqueeze(ref, dim=2) - um).gt(0.0).float() ## stop gradient because of gt
-        mask = ure * pos + (1.0 - ure) * (1.0 - pos) ## b,c,w_s,h,w
+        mask = ure * pos + (1.0 - ure) * (1.0 - pos) ## b,c=1,w_s,h,w
         return mask
 
     def forward(self, x, ref):
-        mask = self.calcMask(ref)
+        mask = self.calcMask(ref) ## b,c=1,w_s,h,w
         x = self.unfold(F.interpolate(self.conv1(x), size=ref.shape[2::], mode="nearest")) ## b,c,w_s,h,w
         x = torch.sum(x * mask, dim=2) / (torch.sum(mask, dim=2) + 1e-6)
         return x + self.conv2(ref)
