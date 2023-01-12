@@ -12,7 +12,6 @@ class FRC(nn.Module):
         weight_init(self)
 
     def calcMask(self, ref):
-        ref = torch.mean(ref, dim=1, keepdim=True) ## c==1
         ur = self.unfold(ref) ## b,c=1,w_s,h,w
         um = torch.mean(ur, dim=2, keepdim=True)
         pos = (ur - um).gt(0.0).float()
@@ -32,15 +31,17 @@ class FrcPN(nn.Module):
     '''
     def __init__(self, dim_bin = [2048, 1024, 512, 256, 64]):
         super().__init__()
-        self.frc = nn.ModuleList([ FRC(f_in, f_out) for f_in, f_out in zip(dim_bin[0:-2], dim_bin[1:-1]) ])
-        self.conv1 = nn.Sequential(nn.Conv2d(dim_bin[-2], dim_bin[-1], 1), nn.BatchNorm2d(dim_bin[-1]), nn.ReLU())
-        self.conv2 = nn.Sequential(nn.Conv2d(dim_bin[-1], dim_bin[-1], 1), nn.BatchNorm2d(dim_bin[-1]), nn.ReLU())
+        self.frc_high = FRC(2048, 1024)
+        self.frc_mid = FRC(1024, 512)
+        self.frc_low = FRC(512, 256)
+        self.conv = nn.Sequential(nn.Conv2d(256, 64, 1), nn.BatchNorm2d(64), nn.ReLU())
+        self.head = nn.Sequential(nn.Conv2d(64, 256, 3, padding=1), nn.BatchNorm2d(256), nn.ReLU(), nn.Conv2d(256, 1, 1))
 
     def forward(self, features):
-        ''' features: f5,f4,f3,f2,f1 '''
-        n = len(features)
-        out = [features[0],]
-        for i in range(n-2):
-            out.append(self.frc[i](out[-1], features[i+1]))
-        out.append( self.conv1(out[-1])+self.conv2(features[-1]) )
-        return out
+        f1, f2, f3, f4, f5 = features
+        o = self.frc_high(f5, f4)
+        o = self.frc_mid(o, f3)
+        o = self.frc_low(o, f2)
+        o = self.head(self.conv(o)+f1)
+        return o
+

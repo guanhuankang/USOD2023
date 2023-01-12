@@ -214,3 +214,33 @@ class LocalWindowTripleLoss(nn.Module):
         triple = torch.maximum(pos_dist - neg_dist + margin, torch.zeros_like(pos_dist)) ## b,1,w_s,h,w
         loss = torch.sum(triple * valid.detach(), dim=[3,4]) / (torch.sum(valid.detach(), dim=[3,4]) + 1e-6)
         return loss.mean()
+
+class LocalWindowTripleLossWithConv(nn.Module):
+    def __init__(self, d_in, d_out=16, alpha=0.05):
+        super().__init__()
+        self.unfold = UnFold(11, dilation=1, padding=0, stride=5)
+        self.conv = nn.Sequential(nn.Conv2d(d_in, d_out, 1), nn.BatchNorm2d(d_out))
+        self.alpha = alpha
+    def forward(self, map, feat, margin=0.5):
+        feat = self.conv(feat)
+        softmap = F.interpolate(map, size=feat.shape[2::], mode="bilinear")
+        hardmap = F.interpolate(map, size=feat.shape[2::], mode="bilinear").gt(0.5).float() ## stop gradient
+
+        m = self.unfold(hardmap) ## b,1,w_s,h,w
+        valid = ((torch.sum(m, dim=2, keepdim=True) > 0.5) * (torch.sum(1.-m, dim=2, keepdim=True) > 0.5)).float() ## no gradient
+        del m, hardmap; torch.cuda.empty_cache()
+
+        unfold_softmap = self.unfold(softmap)  ## b,1,w_s,h,w
+        pos_cnt = torch.sum(unfold_softmap, dim=2, keepdim=True)
+        neg_cnt = torch.sum(1.0 - unfold_softmap, dim=2, keepdim=True)
+        fu = self.unfold(feat)  ## b,c,w_s,h,w
+        pc = torch.sum(unfold_softmap * fu, dim=2, keepdim=True) / (pos_cnt + 1e-6) ## b,c,1,h,w
+        nc = torch.sum((1.0-unfold_softmap) * fu, dim=2, keepdim=True) / (neg_cnt + 1e-6) ## b,c,1,h,w
+        dist_pc = 1.0 - torch.exp(-self.alpha*torch.sum(torch.pow(pc - fu, 2.0), dim=1, keepdim=True)) ## b,1,w_s,h,w
+        dist_nc = 1.0 - torch.exp(-self.alpha*torch.sum(torch.pow(nc - fu, 2.0), dim=1, keepdim=True)) ## b,1,w_s,h,w
+        pos_dist = torch.where(unfold_softmap>0.5, dist_pc, dist_nc) ## b,1,w_s,h,w
+        neg_dist = torch.where(unfold_softmap>0.5, dist_nc, dist_pc) ## b,1,w_s,h,w
+
+        triple = torch.maximum(pos_dist - neg_dist + margin, torch.zeros_like(pos_dist)) ## b,1,w_s,h,w
+        loss = torch.sum(triple * valid.detach(), dim=[3,4]) / (torch.sum(valid.detach(), dim=[3,4]) + 1e-6)
+        return loss.mean()
