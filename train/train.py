@@ -72,6 +72,9 @@ def train(cfg):
                     %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
                       elase / 60, remain / 60), flush=True
                 )
+                ## update EMA every 10 iters
+                net.updateEMA()
+
         ## epoch end/ start epoch test
         scheduler.step()
         if epoch > cfg.epoch * 0.80 or epoch == int(cfg.epoch//2) or epoch>6:

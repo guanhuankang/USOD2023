@@ -8,17 +8,27 @@ import torch.nn.functional as F
 import sys
 
 from net.r50frcpn import R50FrcPN
+from EMA import EMA
 
 class Network(nn.Module):
     def __init__(self, cfg):
         super().__init__()
-        self.model = R50FrcPN(cfg)
+        self.ema = EMA(model=R50FrcPN(cfg), decay=0.90)
+
+    def updateEMA(self):
+        self.ema.update()
 
     def loadCheckPoint(self, init_weight):
         self.load_state_dict(torch.load(init_weight))
 
     def forward(self, x, **kwargs):
-        return self.model(x, **kwargs)
+        self.ema.setEval()
+        if self.training:
+            with torch.no_grad():
+                momen_pred = self.ema(x, mva=True, **kwargs)["pred"].gt(0.5).float()
+            return self.ema(x, momen_pred=momen_pred, **kwargs)
+        else:
+            return self.ema(x, **kwargs)
 
 
 if __name__ == "__main__":
