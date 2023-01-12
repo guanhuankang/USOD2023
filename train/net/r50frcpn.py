@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from net.base.resnet50 import ResNet
 from net.base.frcpn import FrcPN
 from net.contrastive_saliency import ContrastiveSaliency
-from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
+from net.base.modules import weight_init, CRF, LocalWindowTripleLossWithConv
 from net.base.losscollection import fbetaLoss, iouLoss
 
 def delayWarmUp(step, period, delay):
@@ -33,7 +33,7 @@ class R50FrcPN(nn.Module):
         self.sal = ContrastiveSaliency(512, 8, 1024)
         self.initialize()
         self.crf = CRF()
-        self.lwt = LocalWindowTripleLoss(alpha=10.0)
+        self.lwt = LocalWindowTripleLossWithConv(d_in=64)
 
     def initialize(self):
         weight_init(self.conv)
@@ -41,7 +41,7 @@ class R50FrcPN(nn.Module):
     def forward(self, x, global_step=0.0, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
         y = self.decoder([f1, f2, f3, f4, f5])
-        del f1, f2, f3, f4; torch.cuda.empty_cache()
+        del f2, f3, f4; torch.cuda.empty_cache()
         attn, loss = self.sal(self.conv(f5))
         del f5; torch.cuda.empty_cache()
 
@@ -63,7 +63,7 @@ class R50FrcPN(nn.Module):
                 loss += bceloss * w_sal[0] + iouloss * w_sal[1] + fbetaloss * w_sal[2]
             if alpha_other>1e-3:
                 w = [1.0, 1.0, 1.0]
-                lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
+                lwtloss = self.lwt(torch.sigmoid(y), f1, margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
                 consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
                 uncerloss = 0.5 - torch.abs(torch.sigmoid(y) - 0.5).mean(); loss_dict.update({"uncertain_loss": uncerloss.item()})
                 loss += lwtloss * w[0] + consloss * w[1] + uncerloss * w[2]
