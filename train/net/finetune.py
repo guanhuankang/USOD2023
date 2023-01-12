@@ -25,7 +25,7 @@ def uphw(x, size):
 def iouLoss(s, t):
     i = (s * t).sum()
     u = (s + t).sum() - i
-    return (i+1e-6) / (u+1e-6)
+    return 1.0 - (i+1e-6) / (u+1e-6)
 
 class FineTune(nn.Module):
     def __init__(self, cfg):
@@ -60,6 +60,8 @@ class FineTune(nn.Module):
 
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("train_loss", loss_dict, global_step=global_step)
+        else:
+            loss = 0.0
 
         return {
             "loss": loss,
