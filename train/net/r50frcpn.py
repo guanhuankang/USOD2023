@@ -22,6 +22,11 @@ def minMaxNorm(m, eps=1e-12):
 def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
 
+def iouLoss(s, t):
+    i = (s * t).sum()
+    u = (s + t).sum() - i
+    return 1.0 - (i+1e-6)/(u+1e-6)
+
 class R50FrcPN(nn.Module):
     def __init__(self, cfg):
         super().__init__()
@@ -60,8 +65,9 @@ class R50FrcPN(nn.Module):
 
             sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=3, medianBlur=True).gt(0.5).float() ## stop gradient
             if alpha_bce>1e-3 and alpha_bce<0.999:
-                bceloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"bce_loss": bceloss.item()})
-                loss += bceloss
+                # bceloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"bce_loss": bceloss.item()})
+                iouloss = iouLoss(torch.sigmoid(y), sal_cues); loss_dict.update({"iou_loss": iouloss.item()})
+                loss += iouloss
             if alpha_other>1e-3:
                 lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
                 consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
