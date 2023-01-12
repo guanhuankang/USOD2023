@@ -84,18 +84,19 @@ class R50FrcPN(nn.Module):
             w = [1.0, 1.0]
             N = len(x) // 2
 
-            iouloss = iouLoss(torch.sigmoid(y), mask)
+            iouloss = F.binary_cross_entropy_with_logits(y, mask)
             consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::]))
             loss = w[0] * iouloss + w[1] * consloss
 
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("train_loss", {
-                    "iouloss": iouloss.item(),
+                    "bceloss": iouloss.item(),
                     "consloss": consloss.item(),
                     "tot_loss": loss.item()
                 }, global_step=global_step)
         else:
             loss = 0.0
+
         return {
             "loss": loss,
             "pred": torch.sigmoid(uphw(y, size=x.shape[2::]))
