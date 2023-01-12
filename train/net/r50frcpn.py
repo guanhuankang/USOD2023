@@ -22,10 +22,12 @@ def minMaxNorm(m, eps=1e-12):
 def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
 
-def iouLoss(s, t):
-    i = (s * t).sum()
-    u = (s + t).sum() - i
-    return 1.0 - (i+1e-6)/(u+1e-6)
+def iouLoss(pred, mask):
+    pred  = torch.sigmoid(pred)
+    inter = (pred*mask).sum(dim=(2,3))
+    union = (pred+mask).sum(dim=(2,3))
+    iou  = 1-(inter+1)/(union-inter+1)
+    return iou.mean()
 
 class R50FrcPN(nn.Module):
     def __init__(self, cfg):
