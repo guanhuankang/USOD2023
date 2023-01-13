@@ -1,7 +1,7 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_work.json",
   "snapShot": "",
-  "backboneWeight": "D:/2023ICCVUSOD/dataset/PretrainModel/dino_resnet50_pretrain.pth",
+  "backboneWeight": "D:/2023ICCVUSOD/dataset/PretrainModel/moco_v2_200ep_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",

@@ -87,7 +87,8 @@ class ResNet(nn.Module):
     def initialize(self, init_weight):
         if not isinstance(init_weight, type(None)):
             print("load resnet50", init_weight)
-            self.load_state_dict(torch.load(init_weight), strict=False)
+            weight = dict( (k.replace("module.encoder_q.", ""),v) for k,v in torch.load(init_weight)["state_dict"].items() if "fc" not in k )
+            self.load_state_dict(weight, strict=True)
         else:
             print("weight init random")
             weight_init(self)
