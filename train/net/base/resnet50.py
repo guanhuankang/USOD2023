@@ -87,7 +87,7 @@ class ResNet(nn.Module):
     def initialize(self, init_weight):
         if not isinstance(init_weight, type(None)):
             print("load resnet50", init_weight)
-            self.load_state_dict(torch.load(init_weight), strict=True)
+            self.load_state_dict(torch.load(init_weight), strict=False)
         else:
             print("weight init random")
             weight_init(self)
