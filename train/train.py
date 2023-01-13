@@ -75,7 +75,7 @@ def train(cfg):
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
                 print('%s | %.2f%% | step:%d/%d/%d | lr=%.6f | loss=%.6f | elase=%.1fmin | remain=%.1fmin'
-                    %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
+                    %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[1]['lr'], loss.item(),
                       elase / 60, remain / 60), flush=True
                 )
         ## epoch end/ start epoch test
