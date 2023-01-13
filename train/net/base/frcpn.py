@@ -20,7 +20,9 @@ class FRC(nn.Module):
         return mask
 
     def forward(self, x, ref):
-        x = F.interpolate(self.conv1(x), size=ref.shape[2::], mode="nearest")
+        mask = self.calcMask(ref)
+        x = self.unfold(F.interpolate(self.conv1(x), size=ref.shape[2::], mode="nearest")) ## b,c,w_s,h,w
+        x = torch.sum(x * mask, dim=2) / (torch.sum(mask, dim=2) + 1e-6)
         return x + self.conv2(ref)
 
 class FrcPN(nn.Module):
