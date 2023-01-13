@@ -22,4 +22,4 @@ def fbetaLoss(pred, mask, beta2=0.3):
     prc = (tp + eps) / (pred.sum(dim=(2,3)) + eps)
     rec = (tp + eps) / (mask.sum(dim=(2,3)) + eps)
     fbeta = (1.0+beta2) * (prc * rec) / ((beta2 * prc) + rec + eps)
-    return fbeta.mean()
+    return 1.0 - fbeta.mean()
