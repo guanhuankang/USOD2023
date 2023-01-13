@@ -29,7 +29,7 @@ class FrcPN(nn.Module):
     '''
         Cross-Scale Feature Re-Coordinate Pyramid Network
     '''
-    def __init__(self, dim_bin = [2048, 1024, 512, 256, 64]):
+    def __init__(self):
         super().__init__()
         self.frc_high = FRC(2048, 1024)
         self.frc_mid = FRC(1024, 512)

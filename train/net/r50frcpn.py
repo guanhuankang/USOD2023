@@ -28,7 +28,7 @@ class R50FrcPN(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.backbone = ResNet(cfg.backboneWeight)
-        self.decoder = FrcPN(dim_bin=[2048,1024,512,256,64])
+        self.decoder = FrcPN()
         self.conv = nn.Sequential(nn.Conv2d(2048, 512, 1), nn.BatchNorm2d(512), nn.ReLU())
         self.sal = ContrastiveSaliency(512, 8, 1024)
         self.initialize()

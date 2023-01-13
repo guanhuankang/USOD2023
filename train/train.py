@@ -46,6 +46,7 @@ def train(cfg):
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
         for step, (image, mask) in enumerate(loader):
             optimizer.zero_grad()
+            torch.cuda.empty_cache()
             image, mask = image.cuda().float(), mask.cuda().float()
             out = net(image, global_step=global_step/tot_iter, sw=sw, epoches=cfg.epoch)
             loss = out["loss"]
