@@ -17,13 +17,6 @@ from network import Network
 from loader import Loader
 from testmodel import TestModel
 
-def iou_loss(pred, mask):
-    pred  = torch.sigmoid(pred)
-    inter = (pred*mask).sum(dim=(2,3))
-    union = (pred+mask).sum(dim=(2,3))
-    iou  = 1-(inter+1)/(union-inter+1)
-    return iou.mean()
-
 def train(cfg):
     cfg.mode = "train"
     print(cfg)
