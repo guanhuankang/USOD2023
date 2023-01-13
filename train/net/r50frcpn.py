@@ -52,7 +52,7 @@ class R50FrcPN(nn.Module):
         if self.training:
             size = y.shape[2::]
             ep_step = 1.0 / kwargs["epoches"]
-            w = [1.0, 1.0, 0.0]
+            w = [1.0, 1.0, 1.0]
             N = len(x) // 2
             alpha_bce = delayWarmUp(step=global_step, period=ep_step * 4, delay=ep_step * 4)
             alpha_other = delayWarmUp(step=global_step, period=ep_step * 4, delay=ep_step * 6)
