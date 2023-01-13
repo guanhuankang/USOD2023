@@ -1,7 +1,7 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_burgundy.json",
   "snapShot": "",
-  "backboneWeight": "/home/huankguan2/scratch/usod/dino_resnet50_pretrain.pth",
+  "backboneWeight": "/home/huankguan2/scratch/usod/moco_v2_200ep_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
