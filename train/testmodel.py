@@ -60,6 +60,9 @@ class TestModel:
         self.indexs = []
 
     def test(self, tCfg, model, checkpoint=None, name="test", crf=0, save=False):
+        print("Testing ckp:{} name:{}, crf:{}, save:{}\ncfg:{}".format(
+            checkpoint, name, crf, save, tCfg
+        ))
         name = name.replace("\\","_").replace("/","_")
         name_now = name+"_"+str(datetime.datetime.now()).replace("-","_").replace(":","_").replace(" ","_")
 
