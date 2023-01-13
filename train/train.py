@@ -30,8 +30,17 @@ def train(cfg):
     net.train(True)
     net.cuda()
     ## optimizer & logger
-    optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=cfg.momentum, weight_decay=cfg.weightDecay)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay)
+    base, building = [], []
+    for name, param in net.named_parameters():
+        if "backbone.conv1" in name or "backbone.bn1" in name:
+            continue
+        elif "backbone" in name:
+            base.append(param)
+        else:
+            building.append(param)
+    optimizer = torch.optim.SGD([{"params": base}, {"params": building}], lr=cfg.lr, momentum=cfg.momentum, weight_decay=cfg.weightDecay) ## net.parameters()
+
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
     global_step = 0
@@ -42,7 +51,10 @@ def train(cfg):
     testResults = []
 
     for epoch in range(cfg.epoch):
-        # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
+        eppercent = min(1.0,max(0.0, epoch - cfg.epoch_lr_delay)) / min(1.0, max(1e-6, cfg.epoch - cfg.epoch_lr_delay))
+        optimizer.param_groups[0]['lr'] = (1.0 - eppercent**0.9) * cfg.lr * 0.1
+        optimizer.param_groups[1]['lr'] = (1.0 - eppercent**0.9) * cfg.lr
+
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
         net.train(True)
         for step, (image, mask) in enumerate(loader):
@@ -67,7 +79,7 @@ def train(cfg):
                       elase / 60, remain / 60), flush=True
                 )
         ## epoch end/ start epoch test
-        scheduler.step()
+        # scheduler.step()
         if epoch > cfg.epoch * 0.80 or epoch == int(cfg.epoch//2) or epoch>6:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
             torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
