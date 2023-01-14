@@ -36,6 +36,7 @@ class R50FrcPN(nn.Module):
         self.initialize()
         self.crf = CRF()
         self.lwt = LocalWindowTripleLoss(alpha=10.0)
+        self.lwtpos = LocalWindowTripleLoss(alpha=0.01)
 
     def initialize(self):
         weight_init(self.conv)
@@ -63,10 +64,16 @@ class R50FrcPN(nn.Module):
                 bceloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"bce_loss": bceloss.item()})
                 loss += bceloss
             if alpha_other>1e-3:
+                pos_x = torch.arange(x.shape[3]).repeat(x.shape[2]).reshape(*x.shape[2::]).float().cuda().unsqueeze(0)
+                pos_y = torch.arange(x.shape[2]).reshape(-1,1).repeat_interleave(x.shape[3], dim=1).float().cuda().unsqueeze(0)
+                pos_emb = torch.cat([pos_x, pos_y], dim=0).unsqueeze(0).repeat_interleave(len(x), dim=0) ## B,2,H,W
+
                 lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
+                lwtPosloss = self.lwtpos(torch.sigmoid(y), pos_emb, margin=0.5); loss_dict.update({"lwtPosloss": lwtPosloss.item()})
+
                 consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
                 uncerloss = 0.5 - torch.abs(torch.sigmoid(y) - 0.5).mean(); loss_dict.update({"uncertain_loss": uncerloss.item()})
-                loss += lwtloss * w[0] + consloss * w[1] + uncerloss * w[2]
+                loss += (lwtloss+lwtPosloss) * w[0] + consloss * w[1] + uncerloss * w[2]
 
             loss_dict.update({"tot_loss": loss.item()})
             if "sw" in kwargs:
