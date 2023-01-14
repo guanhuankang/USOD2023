@@ -61,7 +61,7 @@ class R50FrcPN(nn.Module):
             loss = -torch.log(prob + 1e-6).mean()
             loss_dict = {"clloss": loss.item()}
 
-            if alpha_other>-1e-3:
+            if alpha_other>1e-3:
                 lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
                 uncerloss = 0.5 - torch.abs(torch.sigmoid(y) - 0.5).mean(); loss_dict.update({"uncertain_loss": uncerloss.item()})
                 loss += lwtloss * w[0] + uncerloss * w[1]
