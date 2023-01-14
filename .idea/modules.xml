@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/msal.iml" filepath="$PROJECT_DIR$/.idea/msal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/sdelay.iml" filepath="$PROJECT_DIR$/.idea/sdelay.iml" />
     </modules>
   </component>
 </project>
