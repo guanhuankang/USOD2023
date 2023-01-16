@@ -4,6 +4,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.transforms.functional as Fv
 from net.base.modules import weight_init, LayerNorm2D
 
 KEY = "conv+LN"
@@ -54,7 +55,7 @@ class ContrastiveSaliency(nn.Module):
         self.g = PositionwiseFeedForward(d_model, d_ff)
         weight_init(self.g)
 
-    def forward(self, x, tau=0.1):
+    def forward(self, x, tau=0.1, hflip=False):
         batch, d_model, h, w = x.shape
         # m = torch.softmax(self.qs(x).flatten(-2,-1), dim=-1).permute(2,0,1) ## hw,b,1
         if KEY=="enc":
@@ -76,7 +77,10 @@ class ContrastiveSaliency(nn.Module):
             prob = torch.diagonal(similarity, batch // 2, dim1=-2, dim2=-1)  ## nq, batch//2
             cl_loss = -torch.log(prob + 1e-6).mean()
 
-            attn_sim_mse = nn.L1Loss()(attn[0:batch//2], attn[batch//2::]).mean()
+            a1 = attn[0:batch//2]
+            a2 = attn[batch//2::]
+            a2 = Fv.hflip(a2) if hflip else a2
+            attn_sim_mse = nn.L1Loss()(a1, a2).mean()
             loss = attn_sim_mse + cl_loss
             return attn, loss
         else:

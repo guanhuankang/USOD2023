@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.transforms.functional as Fv
 
 from net.base.resnet50 import ResNet
 from net.base.frcpn import FrcPN
@@ -42,10 +43,16 @@ class R50FrcPN(nn.Module):
         weight_init(self.head)
 
     def forward(self, x, global_step=0.0, **kwargs):
+        hflip = False
+        if self.training and torch.rand(1)>0.5:
+            hflip = True
+            N = len(x) // 2
+            x = torch.cat([x[0:N], Fv.hflip(x[N::])], dim=0)
+
         f1, f2, f3, f4, f5 = self.backbone(x)
         f5, f4, f3, f2, f1 = self.decoder([f5, f4, f3, f2, f1])
         del f2,f3,f4; torch.cuda.empty_cache()
-        attn, loss = self.sal(self.conv(f5))
+        attn, loss = self.sal(self.conv(f5), hflip=hflip)
         y = self.head(f1)
         del f1, f5; torch.cuda.empty_cache()
 
