@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/simter.iml" filepath="$PROJECT_DIR$/.idea/simter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/simter_least.iml" filepath="$PROJECT_DIR$/.idea/simter_least.iml" />
     </modules>
   </component>
 </project>
