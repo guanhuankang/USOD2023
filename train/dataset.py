@@ -3,6 +3,7 @@
 
 import os
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from PIL import Image
@@ -11,6 +12,15 @@ from torch.utils.data import Dataset
 from common import loadJson, nestedNameSpaceFromDict
 
 ########################### Dataset Class ###########################
+class Corruption(nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, x, p=0.30):
+        mask = (torch.rand(1,x.shape[1],20,20)>=p).float()
+        mask = F.interpolate(mask, size=x.shape[2::], mode="nearest")
+        # mask = (torch.rand(x.shape)>=p).float()
+        return mask * x + (1.0-mask) * torch.mean(x, dim=[-1,-2,-3], keepdim=True)
+
 class Data(Dataset):
     def __init__(self, cfg, mode):
         cfg.mode = mode
