@@ -11,24 +11,24 @@
         }
     },
     "DUTS": {
-        "root": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE",
+        "root": "/home/ryn02/hkguan/dataset/sod/DUTS/DUTS-TE",
         "image": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Image",
+            "path": "/home/ryn02/hkguan/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Image",
             "suffix": ".jpg"
         },
         "mask": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Mask",
+            "path": "/home/ryn02/hkguan/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Mask",
             "suffix": ".png"
         }
     },
     "DUTS-TR": {
-        "root": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR",
+        "root": "/home/ryn02/hkguan/dataset/sod/DUTS/DUTS-TR",
         "image": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Image",
+            "path": "/home/ryn02/hkguan/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Image",
             "suffix": ".jpg"
         },
         "mask": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Mask",
+            "path": "/home/ryn02/hkguan/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Mask",
             "suffix": ".png"
         }
     },
