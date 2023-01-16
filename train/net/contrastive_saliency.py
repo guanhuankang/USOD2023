@@ -55,6 +55,8 @@ class ContrastiveSaliency(nn.Module):
         weight_init(self.g)
 
     def forward(self, x, tau=0.1):
+        x = F.dropout(x, p=0.1)
+
         batch, d_model, h, w = x.shape
         # m = torch.softmax(self.qs(x).flatten(-2,-1), dim=-1).permute(2,0,1) ## hw,b,1
         if KEY=="enc":
