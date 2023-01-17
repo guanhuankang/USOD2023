@@ -12,14 +12,6 @@ from torch.utils.data import Dataset
 from common import loadJson, nestedNameSpaceFromDict
 
 ########################### Dataset Class ###########################
-class Corruption(nn.Module):
-    def __init__(self):
-        super().__init__()
-    def forward(self, x, p=0.30):
-        mask = (torch.rand(1,x.shape[1],20,20)>=p).float()
-        mask = F.interpolate(mask, size=x.shape[2::], mode="nearest")
-        # mask = (torch.rand(x.shape)>=p).float()
-        return mask * x + (1.0-mask) * torch.mean(x, dim=[-1,-2,-3], keepdim=True)
 
 class Data(Dataset):
     def __init__(self, cfg, mode):
@@ -46,12 +38,11 @@ class Data(Dataset):
         image_norm = pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
         pixel_transform = pth_transforms.Compose(
             [
-                pth_transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
-                pth_transforms.GaussianBlur(5)
+                pth_transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)
             ]
         )
         layout_transform = pth_transforms.Compose([
-            pth_transforms.RandomResizedCrop(size=cfg.size, scale=(0.49, 1.0)),
+            pth_transforms.RandomResizedCrop(size=cfg.size, scale=(49.0/64.0, 1.0)),
             pth_transforms.RandomHorizontalFlip()
         ])
 
