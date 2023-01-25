@@ -104,7 +104,6 @@ class Data(Dataset):
                 DA.ColorJitter(p=1.0),
                 DA.CLAHE(),
                 DA.GaussNoise(),
-                DA.GaussNoise(),
                 DA.RandomBrightnessContrast(p=0.5),
                 DA.RGBShift()
             ]
