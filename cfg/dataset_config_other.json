@@ -30,6 +30,10 @@
         "mask": {
             "path": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR/DUTS-TR-Mask",
             "suffix": ".png"
+        },
+        "sal": {
+            "path": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR/DUTS-TR-Sal",
+            "suffix": ".png"
         }
     },
     "ECSSD": {

@@ -113,12 +113,13 @@ class Data(Dataset):
         if self.cfg.mode=='train':
             mask = cv2.imread(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix), 0).astype(
                 np.float32)
-            # sal  = cv2.imread(os.path.join(salCfg.path, name+salCfg.suffix), 0).astype(np.float32)
+            sal = cv2.imread(os.path.join(self.datasetCfg.sal.path, name + self.datasetCfg.sal.suffix), 0).astype(
+                np.float32)
 
-            images, masks = self.normalize([image.astype(np.float32), transform(image=image)["image"].astype(np.float32)], [mask])
+            images, masks = self.normalize([image.astype(np.float32), transform(image=image)["image"].astype(np.float32)], [mask, sal])
             images, masks = self.randomcrop(images, masks)
             images, masks = self.randomflip(images, masks)
-            return images[0], images[1], masks[0]
+            return images[0], images[1], masks[1]
         else:
             shape = image.shape[:2]
             uint8_img = image.copy()
