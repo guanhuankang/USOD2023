@@ -26,9 +26,9 @@ def headLoss(y, p):
     p = torch.sigmoid(p)
     y = y.gt(0.5).float()
     inter = (p * y).mean(dim=[1,2,3])
-    union = (p + y).mean(dim=[1,2,3]) - inter
-    iou = (inter + 1e-6) / (union + 1e-6)
-    return 1.0 - iou
+    union = (p + y).mean(dim=[1,2,3])
+    dice = (2.0 * inter + 1e-6) / (union + 1e-6)
+    return 1.0 - dice
 
 class FT(nn.Module):
     def __init__(self, cfg):
