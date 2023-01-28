@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=gpu_short
+#SBATCH --partition=gpu_7d1g
 #SBATCH --nodes=1                # 1 computer nodes
 #SBATCH --ntasks-per-node=1      # 1 MPI tasks on EACH NODE
 #SBATCH --cpus-per-task=4        # 4 OpenMP threads on EACH MPI TASK
