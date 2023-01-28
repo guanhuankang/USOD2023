@@ -22,13 +22,13 @@
         }
     },
     "DUTS-TR": {
-        "root": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR",
+        "root": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR",
         "image": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Image",
+            "path": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR/DUTS-TR-Image",
             "suffix": ".jpg"
         },
         "mask": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Mask",
+            "path": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR/DUTS-TR-Mask",
             "suffix": ".png"
         }
     },

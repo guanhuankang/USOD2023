@@ -7,12 +7,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sys
 
-from net.r50frcpn import R50FrcPN
+# from net.r50frcpn import R50FrcPN
+from net.ft import FT
 
 class Network(nn.Module):
     def __init__(self, cfg):
         super().__init__()
-        self.model = R50FrcPN(cfg)
+        self.model = FT(cfg)
 
     def loadCheckPoint(self, init_weight):
         self.load_state_dict(torch.load(init_weight))

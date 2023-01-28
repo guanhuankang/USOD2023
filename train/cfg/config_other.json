@@ -1,7 +1,7 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
-  "snapShot": "",
-  "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
+  "snapShot": "checkpoint/model-30-A.pth",
+  "backboneWeight": null,
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
