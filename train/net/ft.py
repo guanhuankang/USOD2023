@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 from net.base.resnet50 import ResNet
 from net.base.frcpn import FrcPN
@@ -54,7 +55,7 @@ class FT(nn.Module):
             loss_lst = [headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p) for p in [p5,p4,p3,p2,p1]]
             loss = sum(loss_lst)
             if "sw" in kwargs:
-                kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item(), "loss_lst": [l.item() for l in loss_lst]}, global_step=global_step)
+                kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item(), "loss_lst": np.array([l.item() for l in loss_lst])}, global_step=global_step)
 
         return {
             "loss": loss,
