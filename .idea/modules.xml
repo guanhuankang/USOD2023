@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ft1.iml" filepath="$PROJECT_DIR$/.idea/ft1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ftcdf.iml" filepath="$PROJECT_DIR$/.idea/ftcdf.iml" />
     </modules>
   </component>
 </project>
