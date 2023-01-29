@@ -38,6 +38,10 @@
         "sal2": {
             "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Sal2",
             "suffix": ".png"
+        },
+        "sal3": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Sal3",
+            "suffix": ".png"
         }
     },
     "ECSSD": {

@@ -38,6 +38,10 @@
         "sal2": {
             "path": "D:\\2023ICCVUSOD\\dataset\\DUTS\\DUTS-TR\\DUTS-TR-Sal2",
             "suffix": ".png"
+        },
+        "sal3": {
+            "path": "D:\\2023ICCVUSOD\\dataset\\DUTS\\DUTS-TR\\DUTS-TR-Sal3",
+            "suffix": ".png"
         }
     },
     "ECSSD": {

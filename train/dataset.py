@@ -113,7 +113,7 @@ class Data(Dataset):
         if self.cfg.mode=='train':
             mask = cv2.imread(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix), 0).astype(
                 np.float32)
-            sal = cv2.imread(os.path.join(self.datasetCfg.sal2.path, name + self.datasetCfg.sal2.suffix), 0).astype(
+            sal = cv2.imread(os.path.join(self.datasetCfg.sal3.path, name + self.datasetCfg.sal3.suffix), 0).astype(
                 np.float32)
 
             images, masks = self.normalize([image.astype(np.float32), transform(image=image)["image"].astype(np.float32)], [mask, sal])
