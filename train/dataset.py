@@ -119,7 +119,7 @@ class Data(Dataset):
             images, masks = self.normalize([image.astype(np.float32), transform(image=image)["image"].astype(np.float32)], [mask, sal])
             images, masks = self.randomcrop(images, masks)
             images, masks = self.randomflip(images, masks)
-            return images[0], images[1], masks[1]
+            return images[0], images[1], masks[0]
         else:
             shape = image.shape[:2]
             uint8_img = image.copy()
