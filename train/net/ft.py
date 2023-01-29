@@ -56,6 +56,8 @@ class FT(nn.Module):
             loss = sum(loss_lst)
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item(), "loss_lst": loss_lst[-1].item()}, global_step=global_step)
+        else:
+            loss = torch.zeros_like(p5).mean()
 
         return {
             "loss": loss,
