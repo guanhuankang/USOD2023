@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ftioum.iml" filepath="$PROJECT_DIR$/.idea/ftioum.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/densefrcpn.iml" filepath="$PROJECT_DIR$/.idea/densefrcpn.iml" />
     </modules>
   </component>
 </project>

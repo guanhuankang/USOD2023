@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import numpy as np
 
 from net.base.resnet50 import ResNet
-from net.base.frcpn import FrcPN
+from net.base.frcpn import FrcPN, DenseFrcPN
 from net.contrastive_saliency import ContrastiveSaliency
 from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
 
@@ -35,7 +35,7 @@ class FT(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.backbone = ResNet(cfg.backboneWeight)
-        self.decoder = FrcPN(dim_bin=[2048,1024,512,256,64])
+        self.decoder = DenseFrcPN(dim_bin=[2048,1024,512,256,64])
         d_model = 256
         self.heads = nn.ModuleList(
             nn.Sequential(

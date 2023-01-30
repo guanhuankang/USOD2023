@@ -43,3 +43,28 @@ class FrcPN(nn.Module):
             out.append(self.frc[i](out[-1], features[i+1]))
         out.append( self.conv1(out[-1])+self.conv2(features[-1]) )
         return out
+
+class DenseFrcPN(nn.Module):
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.frc45 = FRC(2048, 1024)
+        self.frc34 = FRC(1024, 512)
+        self.frc35 = FRC(2048, 512)
+        self.frc23 = FRC(512, 256)
+        self.frc24 = FRC(1024, 256)
+        self.frc25 = FRC(2048, 256)
+        self.conv12 = nn.Sequential(nn.Conv2d(256, 64, 1), nn.BatchNorm2d(64), nn.ReLU())
+        self.conv11 = nn.Sequential(nn.Conv2d(64, 64, 1), nn.BatchNorm2d(64), nn.ReLU())
+        self.frc13 = FRC(512, 64)
+        self.frc14 = FRC(1024, 64)
+        self.frc15 = FRC(2048, 64)
+
+        weight_init(self.conv12)
+        weight_init(self.conv11)
+    def forward(self, features):
+        f5, f4, f3, f2, f1 = features
+        f4 = self.frc45(f5, f4)
+        f3 = self.frc34(f4, f3) + self.frc35(f5, f3)
+        f2 = self.frc23(f3, f2) + self.frc24(f4, f2) + self.frc25(f5, f2)
+        f1 = self.conv12(f2) + self.conv11(f1) + self.frc13(f3, f1) + self.frc14(f4, f1) + self.frc15(f5, f1)
+        return [f5, f4, f3, f2, f1]
