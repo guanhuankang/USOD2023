@@ -64,7 +64,7 @@ class TestModel:
             checkpoint, name, crf, save, tCfg
         ))
         name = name.replace("\\","_").replace("/","_")
-        name_now = name+"_"+str(datetime.datetime.now()).replace("-","_").replace(":","_").replace(" ","_")
+        name_now = name#+"_"+str(datetime.datetime.now()).replace("-","_").replace(":","_").replace(" ","_")
 
         name_list = [x[0:-len(tCfg.image.suffix)] for x in os.listdir(tCfg.image.path) if x.endswith(tCfg.image.suffix)]
         transform = pth_transforms.Compose([
