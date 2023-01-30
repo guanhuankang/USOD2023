@@ -44,20 +44,27 @@ class FT(nn.Module):
             )
             for dim in [2048,1024,512,256,64]
         )
+        self.fusion = nn.Sequential(
+            nn.Conv2d(5, d_model, 1), nn.BatchNorm2d(d_model), nn.ReLU(),
+            nn.Conv2d(d_model, 1, 1)
+        )
 
         self.initialize()
 
     def initialize(self):
         for x in self.heads:
             weight_init(x)
+        weight_init(self.fusion)
 
     def forward(self, x, global_step=0.0, mask=None, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
         f5, f4, f3, f2, f1 = self.decoder([f5, f4, f3, f2, f1])
         p5,p4,p3,p2,p1 = [ head(f) for head,f in zip(self.heads, [f5, f4, f3, f2, f1]) ]
+        pf = self.fusion(torch.cat([uphw(p, size=x.shape[2::]) for p in [p5,p4,p3,p2,p1]], dim=1))
 
         if self.training:
-            loss_lst = [headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p) for p in [p5,p4,p3,p2,p1]]
+            loss_lst = [headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p) for p in [p5,p4,p3,p2,p1,pf]]
+
             loss = sum(loss_lst)
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item(), "loss_lst": loss_lst[-1].item()}, global_step=global_step)
@@ -66,5 +73,5 @@ class FT(nn.Module):
 
         return {
             "loss": loss,
-            "pred": uphw(torch.sigmoid(p1), size=x.shape[2::])
+            "pred": uphw(torch.sigmoid(pf), size=x.shape[2::])
         }

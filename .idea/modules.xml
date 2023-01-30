@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ftiou2.iml" filepath="$PROJECT_DIR$/.idea/ftiou2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/fusion.iml" filepath="$PROJECT_DIR$/.idea/fusion.iml" />
     </modules>
   </component>
 </project>
