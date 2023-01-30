@@ -19,7 +19,7 @@
   "std": [ 56.77,  55.97,  57.50],
   "size": [352,352],
   "batchSize": 16,
-  "lr": 0.002,
+  "lr": 0.005,
   "momentum": 0.9,
   "weightDecay": 5e-4,
   "epoch": 30,
