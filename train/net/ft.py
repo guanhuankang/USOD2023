@@ -23,13 +23,20 @@ def minMaxNorm(m, eps=1e-12):
 def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
 
-def headLoss(y, p):
+def iouloss(y, p):
     p = torch.sigmoid(p)
     y = y.gt(0.5).float()
     inter = (p * y).mean(dim=[1,2,3])
     union = (p + y).mean(dim=[1,2,3]) - inter
     iou = (inter + 1e-6) / (union + 1e-6)
     return (1.0 - iou).mean()
+
+def headLoss(y, p):
+    fg = iouloss(y, p)
+    bg = iouloss(1.0-y, -p)
+    pw = y.mean()
+    loss = fg * pw + bg * (1.0 - pw) ## bg pixels are more than fg pixels, so more efforts on bg
+    return loss
 
 class FT(nn.Module):
     def __init__(self, cfg):
