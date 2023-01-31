@@ -24,12 +24,16 @@ def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
 
 def headLoss(y, p):
+    bceloss = F.binary_cross_entropy_with_logits(y, p)
+
     p = torch.sigmoid(p)
     y = y.gt(0.5).float()
     inter = (p * y).mean(dim=[1,2,3])
     union = (p + y).mean(dim=[1,2,3]) - inter
     iou = (inter + 1e-6) / (union + 1e-6)
-    return (1.0 - iou).mean()
+    iouloss = (1.0 - iou).mean()
+
+    return iouloss + bceloss
 
 class FT(nn.Module):
     def __init__(self, cfg):
