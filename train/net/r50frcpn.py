@@ -60,7 +60,9 @@ class R50FrcPN(nn.Module):
 
             sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=3).gt(0.5).float() ## stop gradient
             if alpha_bce>1e-3 and alpha_bce<0.999:
-                bceloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"bce_loss": bceloss.item()})
+                scm = sal_cues.mean()
+                pos_weight = (1.0-scm+1e-6)/(scm+1e-6)
+                bceloss = F.binary_cross_entropy_with_logits(y, sal_cues, pos_weight=pos_weight); loss_dict.update({"bce_loss": bceloss.item()})
                 loss += bceloss
             if alpha_other>1e-3:
                 lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
