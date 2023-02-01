@@ -119,6 +119,17 @@
             "path": null,
             "suffix": ".png"
         }
+    },
+    "DUTSSYN": {
+        "root": "D:\\2023ICCVUSOD\\dataset\\DUTSSYN",
+        "image": {
+            "path": "D:\\2023ICCVUSOD\\dataset\\DUTSSYN\\image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": null,
+            "suffix": ".png"
+        }
     }
 }
 

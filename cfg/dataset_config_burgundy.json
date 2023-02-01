@@ -119,6 +119,17 @@
             "path": null,
             "suffix": ".png"
         }
+    },
+    "DUTSSYN": {
+        "root": "/home/huankguan2/scratch/dataset/sod/DUTSSYN",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUTSSYN/image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": null,
+            "suffix": ".png"
+        }
     }
 }
 
