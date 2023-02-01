@@ -96,6 +96,10 @@ class Data(Dataset):
         self.totensor   = ToTensor()
         self.samples = [ x[0:-4] for x in os.listdir(datasetCfg.image.path) if x.endswith(datasetCfg.image.suffix) ]
         self.datasetCfg = datasetCfg
+
+    def length(self):
+        return len(self.samples)
+
     def __getstate__(self): return self.__dict__
     def __setstate__(self, d): self.__dict__.update(d)
     def __getitem__(self, idx):
@@ -107,7 +111,7 @@ class Data(Dataset):
             ]
         )
 
-        name  = self.samples[idx]
+        name  = self.samples[np.random.randint(self.length())]
         image = cv2.imread(os.path.join(self.datasetCfg.image.path, name+self.datasetCfg.image.suffix))[:,:,::-1].astype(np.uint8) ## RGB
 
         if self.cfg.mode=='train':
@@ -130,7 +134,8 @@ class Data(Dataset):
             return image, uint8_img, shape, name
 
     def __len__(self):
-        return len(self.samples)
+        # return len(self.samples)
+        return 30000
 
     def testCollate(self, batch):
         image, uint8_img, shape, name = [list(item) for item in zip(*batch)]
