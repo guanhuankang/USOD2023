@@ -111,9 +111,10 @@ class Data(Dataset):
         image = cv2.imread(os.path.join(self.datasetCfg.image.path, name+self.datasetCfg.image.suffix))[:,:,::-1].astype(np.uint8) ## RGB
 
         if self.cfg.mode=='train':
-            mask = cv2.imread(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix), 0).astype(
-                np.float32)
+            # mask = cv2.imread(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix), 0).astype(
+            #     np.float32)
             # sal  = cv2.imread(os.path.join(salCfg.path, name+salCfg.suffix), 0).astype(np.float32)
+            mask = np.zeros_like(image)[:,:,0] ## fake mask
 
             images, masks = self.normalize([image.astype(np.float32), transform(image=image)["image"].astype(np.float32)], [mask])
             images, masks = self.randomcrop(images, masks)

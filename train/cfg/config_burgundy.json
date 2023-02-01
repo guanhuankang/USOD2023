@@ -4,7 +4,7 @@
   "backboneWeight": "/home/huankguan2/scratch/usod/dino_resnet50_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
-  "trainSet": "DUTS-TR",
+  "trainSet": "DUTSCOCO",
   "testSet": "DUTS",
   "eventPath": "./event",
 

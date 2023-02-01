@@ -108,6 +108,17 @@
             "path": "D:\\2023ICCVUSOD\\dataset\\THUR\\THUR15000\\Butterfly\\mask",
             "suffix": ".png"
         }
+    },
+    "DUTSCOCO": {
+        "root": "D:\\2023ICCVUSOD\\dataset\\DUTSCOCO",
+        "image": {
+            "path": "D:\\2023ICCVUSOD\\dataset\\DUTSCOCO\\image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": null,
+            "suffix": ".png"
+        }
     }
 }
 

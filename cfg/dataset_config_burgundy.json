@@ -108,6 +108,17 @@
             "path": "/home/huankguan2/scratch/dataset/sod/THUR/THUR15000/Butterfly/mask",
             "suffix": ".png"
         }
+    },
+    "DUTSCOCO": {
+        "root": "/home/huankguan2/scratch/dataset/sod/DUTSCOCO",
+        "image": {
+            "path": "/home/huankguan2/scratch/dataset/sod/DUTSCOCO/image",
+            "suffix": ".jpg"
+        },
+        "mask": {
+            "path": null,
+            "suffix": ".png"
+        }
     }
 }
 
