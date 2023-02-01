@@ -24,7 +24,7 @@ def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
 
 def headLoss(y, p):
-    bceloss = F.binary_cross_entropy_with_logits(y, p)
+    bceloss = F.binary_cross_entropy_with_logits(p, y)
 
     p = torch.sigmoid(p)
     y = y.gt(0.5).float()
