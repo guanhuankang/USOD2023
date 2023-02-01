@@ -111,7 +111,7 @@ class Data(Dataset):
             ]
         )
 
-        name  = self.samples[np.random.randint(self.length())]
+        name  = self.samples[idx]
         image = cv2.imread(os.path.join(self.datasetCfg.image.path, name+self.datasetCfg.image.suffix))[:,:,::-1].astype(np.uint8) ## RGB
 
         if self.cfg.mode=='train':
