@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sys
 
-from structureawaretool import SaliencyStructureConsistency
+from structureawaretool import SaliencyStructureConsistency, LocalSaliencyCoherence
 # from net.r50frcpn import R50FrcPN
 from net.ft import FT
 
@@ -15,6 +15,7 @@ class Network(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.model = FT(cfg)
+        self.loss_lsc = LocalSaliencyCoherence().cuda()
 
     def loadCheckPoint(self, init_weight):
         self.load_state_dict(torch.load(init_weight))
@@ -27,7 +28,14 @@ class Network(nn.Module):
         ref_scale = F.interpolate(out1["pred"], scale_factor=0.3, mode="bilinear", align_corners=True)
         loss_ssc = SaliencyStructureConsistency(y_scale, ref_scale, 0.85)
 
-        out1["loss"] = out1["loss"] + loss_ssc
+        loss_lsc_kernels_desc_defaults = [{"weight": 1, "xy": 6, "rgb": 0.1}]
+        loss_lsc_radius = 5
+        x_small = F.interpolate(x, scale_factor=0.25, mode="bilinear", align_corners=True)
+        sample = {"rgb": x_small}
+        ref_small = F.interpolate(out1["pred"], scale_factor=0.25, mode="bilinear", align_corners=True)
+        loss_lsc = self.loss_lsc(ref_small, loss_lsc_kernels_desc_defaults, loss_lsc_radius, sample, x_small.shape[2], x_small.shape[3])['loss']
+
+        out1["loss"] = out1["loss"] + loss_ssc + 0.3 * loss_lsc
         return out1
 
 
