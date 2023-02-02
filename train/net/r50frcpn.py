@@ -54,11 +54,11 @@ class R50FrcPN(nn.Module):
             ep_step = 1.0 / kwargs["epoches"]
             # w = [1.0, 1.0, 1.0]
             # N = len(x) // 2
-            # alpha_bce = delayWarmUp(step=global_step, period=ep_step, delay=ep_step * 0)
+            alpha_bce = delayWarmUp(step=global_step, period=ep_step, delay=ep_step * 2)
             loss_dict = {"clloss": loss.item()}
 
             sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=3).gt(0.5).float() ## stop gradient
-            if True:
+            if alpha_bce>1e-3:
                 bceloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"bce_loss": bceloss.item()})
                 loss += bceloss
                 # lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
