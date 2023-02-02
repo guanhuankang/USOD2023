@@ -131,7 +131,7 @@ class Data(Dataset):
             return image, uint8_img, shape, name
 
     def __len__(self):
-        return len(self.samples)
+        return min(len(self.samples), 30000)
 
     def testCollate(self, batch):
         image, uint8_img, shape, name = [list(item) for item in zip(*batch)]

@@ -4,7 +4,7 @@
   "backboneWeight": "D:/2023ICCVUSOD/dataset/PretrainModel/dino_resnet50_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
-  "trainSet": "DUTS-TR",
+  "trainSet": "DUTSCOCO",
   "testSet": "DUTS",
   "eventPath": "./event",
 
