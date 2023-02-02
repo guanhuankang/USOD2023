@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=4        # 4 OpenMP threads on EACH MPI TASK
 #SBATCH --gres=gpu:1             # Using 1 GPU card
 #SBATCH --mem=64GB               # Request 50GB memory
-#SBATCH --time=5-11:59:00        # Time limit day-hrs:min:sec
+#SBATCH --time=0-11:59:00        # Time limit day-hrs:min:sec
 #SBATCH --output=output.log   # Standard output
 #SBATCH --error=error.err    # Standard error log
 
