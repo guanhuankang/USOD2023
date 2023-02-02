@@ -28,6 +28,8 @@ class Network(nn.Module):
         loss_ssc = SaliencyStructureConsistency(y_scale, ref_scale, 0.85)
 
         out1["loss"] = out1["loss"] + loss_ssc
+        if "sw" in kwargs:
+            kwargs["sw"].add_scalars("loss", {"ms": loss_ssc.item()}, global_step=kwargs["global_step"])
         return out1
 
 
