@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sys
 
+from structureawaretool import SaliencyStructureConsistency
 # from net.r50frcpn import R50FrcPN
 from net.ft import FT
 
@@ -19,7 +20,15 @@ class Network(nn.Module):
         self.load_state_dict(torch.load(init_weight))
 
     def forward(self, x, **kwargs):
-        return self.model(x, **kwargs)
+        out1 = self.model(x, **kwargs)
+
+        x_scale = F.interpolate(x, scale_factor=0.3, mode="bilinear", align_corners=True)
+        y_scale = self.model(x_scale, **kwargs)["pred"]
+        ref_scale = F.interpolate(out1["pred"], scale_factor=0.3, mode="bilinear", align_corners=True)
+        loss_ssc = SaliencyStructureConsistency(y_scale, ref_scale, 0.85)
+
+        out1["loss"] = out1["loss"] + loss_ssc
+        return out1
 
 
 if __name__ == "__main__":
