@@ -72,6 +72,6 @@ class R50FrcPN(nn.Module):
 
         return {
             "loss": loss,
-            "pred": uphw(torch.sigmoid(y), size=x.shape[2::]),
-            "attn": attn
+            # "pred": uphw(torch.sigmoid(y), size=x.shape[2::]),
+            "pred": uphw(minMaxNorm(attn), size=x.shape[2::])
         }
