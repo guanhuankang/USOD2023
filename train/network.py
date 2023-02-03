@@ -38,6 +38,15 @@ class Network(nn.Module):
         loss_lsc = self.loss_lsc(ref_small, loss_lsc_kernels_desc_defaults, loss_lsc_radius, sample, x_small.shape[2], x_small.shape[3])['loss']
 
         loss = out1["loss"] + out2["loss"] + loss_ssc + 0.3 * loss_lsc
+
+        if "sw" in kwargs:
+            kwargs["sw"].add_scalars("loss", {
+                "bce1": out1["loss"].item(),
+                "bce2": out2["loss"].item(),
+                "ssc": loss_ssc.item(),
+                "lsc": loss_lsc.item()
+            }, global_step=kwargs["global_step"])
+
         return {
             "loss": loss,
             "pred": out1["pred"],
