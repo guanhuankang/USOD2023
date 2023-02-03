@@ -33,7 +33,7 @@ def iouLoss(y, p):
     return (1.0 - iou).mean()
 
 def headLoss(y, p):
-    return F.binary_cross_entropy_with_logits(p, y) + iouLoss(y, p)
+    return 2.0 * F.binary_cross_entropy_with_logits(p, y)
 
 class FT(nn.Module):
     def __init__(self, cfg):
@@ -72,7 +72,7 @@ class FT(nn.Module):
             loss_lst = [headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p) for p in [p5,p4,p3,p2,p1]]
             loss = sum(loss_lst)
 
-            loss += 0.3 * loss_lsc
+            loss += 0.1 * loss_lsc
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", {
                     "tot_loss": loss.item(), "loss_lst": loss_lst[-1].item(), "lsc": loss_lsc.item()

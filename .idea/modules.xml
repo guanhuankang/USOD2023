@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ftms.iml" filepath="$PROJECT_DIR$/.idea/ftms.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ftlsc.iml" filepath="$PROJECT_DIR$/.idea/ftlsc.iml" />
     </modules>
   </component>
 </project>
