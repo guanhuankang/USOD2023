@@ -14,7 +14,6 @@ class Network(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.model = FT(cfg)
-        self.loss_lsc = LocalSaliencyCoherence().cuda()
 
     def loadCheckPoint(self, init_weight):
         self.load_state_dict(torch.load(init_weight))
