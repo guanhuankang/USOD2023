@@ -23,14 +23,25 @@ class Network(nn.Module):
         out1 = self.model(x, **kwargs)
 
         x_scale = F.interpolate(x, scale_factor=0.3, mode="bilinear", align_corners=True)
-        y_scale = self.model(x_scale, **kwargs)["pred"]
+        out2 = self.model(x_scale, **kwargs)
+        y_scale = out2["pred"]
+
         ref_scale = F.interpolate(out1["pred"], scale_factor=0.3, mode="bilinear", align_corners=True)
         loss_ssc = SaliencyStructureConsistency(y_scale, ref_scale, 0.85)
 
-        out1["loss"] = out1["loss"] + loss_ssc
+        loss = out1["loss"] + out2["loss"] + loss_ssc
+
         if "sw" in kwargs:
-            kwargs["sw"].add_scalars("loss", {"ms": loss_ssc.item()}, global_step=kwargs["global_step"])
-        return out1
+            kwargs["sw"].add_scalars("loss", {
+                "ms": loss_ssc.item(),
+                "bce1": out1["loss"].item(),
+                "bce2": out2["loss"].item()
+            }, global_step=kwargs["global_step"])
+        return {
+            "loss": loss,
+            "pred": out1["pred"],
+            "pred_scale": y_scale
+        }
 
 
 if __name__ == "__main__":
