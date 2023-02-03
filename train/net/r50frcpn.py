@@ -35,7 +35,7 @@ class R50FrcPN(nn.Module):
         )
         self.initialize()
         self.crf = CRF()
-        # self.lwt = LocalWindowTripleLoss(alpha=10.0)
+        self.lwt = LocalWindowTripleLoss(alpha=10.0)
 
     def initialize(self):
         weight_init(self.conv)
@@ -52,19 +52,21 @@ class R50FrcPN(nn.Module):
         if self.training:
             size = y.shape[2::]
             ep_step = 1.0 / kwargs["epoches"]
-            # w = [1.0, 1.0, 1.0]
-            # N = len(x) // 2
-            alpha_bce = delayWarmUp(step=global_step, period=ep_step, delay=ep_step * 10)
+            w = [1.0, 1.0, 1.0]
+            N = len(x) // 2
+            alpha_bce = delayWarmUp(step=global_step, period=10, delay=ep_step * 10)
+            alpha_other = delayWarmUp(step=global_step, period=20, delay=ep_step * 20)
             loss_dict = {"clloss": loss.item()}
 
             sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=3).gt(0.5).float() ## stop gradient
-            if alpha_bce>1e-3:
+            if alpha_bce>1e-3 and alpha_bce<0.999:
                 bceloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"bce_loss": bceloss.item()})
                 loss += bceloss
-                # lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
-                # consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
-                # uncerloss = 0.5 - torch.abs(torch.sigmoid(y) - 0.5).mean(); loss_dict.update({"uncertain_loss": uncerloss.item()})
-                # loss += lwtloss * w[0] + consloss * w[1] + uncerloss * w[2]
+            if alpha_other>1e-3:
+                lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
+                consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
+                uncerloss = 0.5 - torch.abs(torch.sigmoid(y) - 0.5).mean(); loss_dict.update({"uncertain_loss": uncerloss.item()})
+                loss += lwtloss * w[0] + consloss * w[1] + uncerloss * w[2]
 
             loss_dict.update({"tot_loss": loss.item()})
             if "sw" in kwargs:
