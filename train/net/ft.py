@@ -6,6 +6,7 @@ import numpy as np
 from net.base.resnet50 import ResNet
 from net.base.frcpn import FrcPN
 from net.contrastive_saliency import ContrastiveSaliency
+from structureawaretool import SaliencyStructureConsistency, LocalSaliencyCoherence
 from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
 
 def delayWarmUp(step, period, delay):
@@ -32,7 +33,7 @@ def iouLoss(y, p):
     return (1.0 - iou).mean()
 
 def headLoss(y, p):
-    return F.binary_cross_entropy_with_logits(p, y)
+    return F.binary_cross_entropy_with_logits(p, y) + iouLoss(y, p)
 
 class FT(nn.Module):
     def __init__(self, cfg):
@@ -47,7 +48,7 @@ class FT(nn.Module):
             )
             for dim in [2048,1024,512,256,64]
         )
-
+        self.loss_lsc = LocalSaliencyCoherence()
         self.initialize()
 
     def initialize(self):
@@ -60,10 +61,22 @@ class FT(nn.Module):
         p5,p4,p3,p2,p1 = [ head(f) for head,f in zip(self.heads, [f5, f4, f3, f2, f1]) ]
 
         if self.training:
+            loss_lsc_kernels_desc_defaults = [{"weight": 1, "xy": 6, "rgb": 0.1}]
+            loss_lsc_radius = 5
+            x_small = F.interpolate(x, scale_factor=0.5, mode="bilinear", align_corners=True)
+            sample = {"rgb": x_small}
+            ref_small = F.interpolate(torch.sigmoid(p1), size=x_small.shape[2::], mode="bilinear", align_corners=True)
+            loss_lsc = self.loss_lsc(ref_small, loss_lsc_kernels_desc_defaults, loss_lsc_radius, sample, x_small.shape[2],
+                          x_small.shape[3])['loss']
+
             loss_lst = [headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p) for p in [p5,p4,p3,p2,p1]]
             loss = sum(loss_lst)
+
+            loss += 0.3 * loss_lsc
             if "sw" in kwargs:
-                kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item(), "loss_lst": loss_lst[-1].item()}, global_step=global_step)
+                kwargs["sw"].add_scalars("loss", {
+                    "tot_loss": loss.item(), "loss_lst": loss_lst[-1].item(), "lsc": loss_lsc.item()
+                }, global_step=global_step)
         else:
             loss = torch.zeros_like(p5).mean()
 

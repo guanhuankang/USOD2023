@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sys
 
-from structureawaretool import SaliencyStructureConsistency, LocalSaliencyCoherence
 # from net.r50frcpn import R50FrcPN
 from net.ft import FT
 
@@ -21,38 +20,7 @@ class Network(nn.Module):
         self.load_state_dict(torch.load(init_weight))
 
     def forward(self, x, **kwargs):
-        out1 = self.model(x, **kwargs)
-
-        x_scale = F.interpolate(x, scale_factor=0.3, mode="bilinear", align_corners=True)
-        out2 = self.model(x_scale, **kwargs)
-
-        y_scale = out2["pred"]
-        ref_scale = F.interpolate(out1["pred"], size=y_scale.shape[2::], mode="bilinear", align_corners=True)
-        loss_ssc = SaliencyStructureConsistency(y_scale, ref_scale, 0.85)
-
-        loss_lsc_kernels_desc_defaults = [{"weight": 1, "xy": 6, "rgb": 0.1}]
-        loss_lsc_radius = 5
-        x_small = F.interpolate(x, scale_factor=0.25, mode="bilinear", align_corners=True)
-        sample = {"rgb": x_small}
-        ref_small = F.interpolate(out1["pred"], scale_factor=0.25, mode="bilinear", align_corners=True)
-        loss_lsc = self.loss_lsc(ref_small, loss_lsc_kernels_desc_defaults, loss_lsc_radius, sample, x_small.shape[2], x_small.shape[3])['loss']
-
-        loss = out1["loss"] + out2["loss"] + loss_ssc + 0.3 * loss_lsc
-
-        if "sw" in kwargs:
-            kwargs["sw"].add_scalars("loss", {
-                "bce1": out1["loss"].item(),
-                "bce2": out2["loss"].item(),
-                "ssc": loss_ssc.item(),
-                "lsc": loss_lsc.item()
-            }, global_step=kwargs["global_step"])
-
-        return {
-            "loss": loss,
-            "pred": out1["pred"],
-            "pred_scale": out2["pred"]
-        }
-
+        return self.model(x, **kwargs)
 
 if __name__ == "__main__":
     from PIL import Image
