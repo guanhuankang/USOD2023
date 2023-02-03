@@ -19,10 +19,10 @@
   "std": [ 56.77,  55.97,  57.50],
   "size": [352,352],
   "batchSize": 2,
-  "lr": 0.005,
+  "lr": 0.001,
   "momentum": 0.9,
   "weightDecay": 5e-4,
   "epoch": 30,
-  "epoch_lr_delay": 25,
+  "epoch_lr_delay": 30,
   "numWorkers": 2
 }
