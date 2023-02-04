@@ -1,7 +1,7 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
-  "snapShot": "checkpoint/model-30-A.pth",
-  "backboneWeight": null,
+  "snapShot": "",
+  "backboneWeight": "/home/ti3/hkguan/dataset/dino_resnet50_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
@@ -9,6 +9,7 @@
   "eventPath": "./event",
 
   "name": "other",
+  "salPath": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Sal",
   "d_model": 512,
   "n_head": 8,
   "d_ff": 1024,
@@ -17,11 +18,11 @@
   "mean": [124.55, 118.90, 102.94],
   "std": [ 56.77,  55.97,  57.50],
   "size": [352,352],
-  "batchSize": 16,
-  "lr": 0.001,
+  "batchSize": 8,
+  "lr": 0.002,
   "momentum": 0.9,
   "weightDecay": 5e-4,
-  "epoch": 20,
-  "epoch_lr_delay": 18,
+  "epoch": 40,
+  "epoch_lr_delay": 40,
   "numWorkers": 4
 }

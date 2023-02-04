@@ -11,28 +11,28 @@
         }
     },
     "DUTS": {
-        "root": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE",
+        "root": "/home/ti3/hkguan/dataset/sod/DUTS",
         "image": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Image",
+            "path": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TE-Image",
             "suffix": ".jpg"
         },
         "mask": {
-            "path": "/home/huankguan2/scratch/dataset/sod/DUTS/DUTS-TE/DUTS-TE-Mask",
+            "path": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TE-Mask",
             "suffix": ".png"
         }
     },
     "DUTS-TR": {
-        "root": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR",
+        "root": "/home/ti3/hkguan/dataset/sod/DUTS",
         "image": {
-            "path": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR/DUTS-TR-Image",
+            "path": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TR-Image",
             "suffix": ".jpg"
         },
         "mask": {
-            "path": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR/DUTS-TR-Mask",
+            "path": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TR-Mask",
             "suffix": ".png"
         },
         "sal": {
-            "path": "D:/oss/2023ICCV-USOD/dataset/DUTS/DUTS-TR/DUTS-TR-Sal",
+            "path": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TR-Sal",
             "suffix": ".png"
         }
     },
