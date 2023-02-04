@@ -54,8 +54,8 @@ class R50FrcPN(nn.Module):
             ep_step = 1.0 / kwargs["epoches"]
             w = [1.0, 1.0, 1.0]
             N = len(x) // 2
-            alpha_bce = delayWarmUp(step=global_step, period=ep_step * 4, delay=ep_step * 4)
-            alpha_other = delayWarmUp(step=global_step, period=ep_step * 4, delay=ep_step * 6)
+            alpha_bce = delayWarmUp(step=global_step, period=ep_step * 10, delay=ep_step * 10)
+            alpha_other = delayWarmUp(step=global_step, period=ep_step * 20, delay=ep_step * 20)
             loss_dict = {"clloss": loss.item()}
 
             sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=3).gt(0.5).float() ## stop gradient
