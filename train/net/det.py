@@ -40,6 +40,7 @@ class Detector(nn.Module):
             nn.Conv2d(256, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
             nn.Conv2d(256, 1, 1)
         )
+        self.lwt = LocalWindowTripleLoss(alpha=10.0)
         self.initialize()
 
     def initialize(self):
@@ -51,9 +52,20 @@ class Detector(nn.Module):
         p = self.head(f2)
 
         if self.training:
-            loss = headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p)
+            ep_step = 1.0 / kwargs["epoches"]
+            alpha = delayWarmUp(step=global_step, period=ep_step, delay=ep_step * 10)
+
+            lwtloss = self.lwt(torch.sigmoid(p), minMaxNorm(x), margin=0.5)
+            iouloss = headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p)
+            loss = iouloss + alpha * lwtloss
+
             if "sw" in kwargs:
-                kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item()}, global_step=global_step)
+                kwargs["sw"].add_scalars("loss", {
+                    "tot_loss": loss.item(),
+                    "alpha": alpha,
+                    "iouloss": iouloss.item(),
+                    "lwtloss": lwtloss.item()
+                }, global_step=global_step)
         else:
             loss = torch.zeros_like(p).mean()
 
