@@ -115,7 +115,7 @@ if __name__=="__main__":
     testModel = TestModel()
     print(tCfg, flush=True)
 
-    ckp_folder = ["weights"]
+    ckp_folder = ["checkpoint"]
     ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
     results = []
     for ckp in ckps:
