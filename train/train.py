@@ -68,7 +68,7 @@ def train(cfg):
                 )
         ## epoch end/ start epoch test
         # scheduler.step()
-        if epoch > cfg.epoch * 0.80 or epoch == int(cfg.epoch//2) or epoch>6:
+        if True:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
             torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
             with torch.no_grad():
