@@ -30,7 +30,7 @@ class R50FrcPN(nn.Module):
         self.conv = nn.Sequential(nn.Conv2d(2048, 512, 1), nn.BatchNorm2d(512), nn.ReLU())
         self.sal = ContrastiveSaliency(512, 8, 1024)
         self.head = nn.Sequential(
-            nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
+            nn.Conv2d(256, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
             nn.Conv2d(256, 1, 1)
         )
         self.initialize()
