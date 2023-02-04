@@ -44,10 +44,8 @@ class R50FrcPN(nn.Module):
     def forward(self, x, global_step=0.0, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
         f5, f4, f3, f2, f1 = self.decoder([f5, f4, f3, f2, f1])
-        del f2,f3,f4; torch.cuda.empty_cache()
         attn, loss = self.sal(self.conv(f5))
-        y = self.head(f1)
-        del f1, f5; torch.cuda.empty_cache()
+        y = self.head(f2)
 
         if self.training:
             size = y.shape[2::]
