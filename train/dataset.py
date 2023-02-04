@@ -142,6 +142,8 @@ class Data(Dataset):
             image0[i] = cv2.resize(image0[i], dsize=(size, size), interpolation=cv2.INTER_LINEAR)
             image1[i] = cv2.resize(image1[i], dsize=(size, size), interpolation=cv2.INTER_LINEAR)
             mask[i]  = cv2.resize(mask[i],  dsize=(size, size), interpolation=cv2.INTER_LINEAR)
-        image  = torch.from_numpy(np.stack(image0 + image1, axis=0)).permute(0,3,1,2)
-        mask   = torch.from_numpy(np.stack(mask + mask, axis=0)).unsqueeze(1)
+        # image  = torch.from_numpy(np.stack(image0 + image1, axis=0)).permute(0,3,1,2)
+        # mask   = torch.from_numpy(np.stack(mask + mask, axis=0)).unsqueeze(1)
+        image  = torch.from_numpy(np.stack(image0, axis=0)).permute(0,3,1,2)
+        mask   = torch.from_numpy(np.stack(mask, axis=0)).unsqueeze(1)
         return image, mask

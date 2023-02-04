@@ -60,6 +60,7 @@ if __name__=='__main__':
     names = ["round{}ep".format(r+1) for r in range(5)]
     for name in names:
         round(name, cg)
-        cg["salPath"] = updateLabel(name, cfg, tCfg, csv=name+"_results.csv")
+        # cg["salPath"] = updateLabel(name, cfg, tCfg, csv=name+"_results.csv")
+        cg["salPath"] = updateLabel(name, cfg, tCfg, csv=None)
 
 
