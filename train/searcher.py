@@ -34,3 +34,4 @@ if __name__=='__main__':
     cg = {"lr": cfg.lr, "bs": cfg.batchSize, "epoch": cfg.epoch, "d_model": cfg.d_model, "d_ff": cfg.d_ff}
 
     go("A", cg)
+    go("B", cg, lr=5e-3)
