@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import numpy as np
 
 from net.base.resnet50 import ResNet
-from net.base.resnext import ResNeXt101
+from net.base.resnext.resnext101_regular import ResNeXt101
 from net.base.frcpn import FrcPN
 from net.contrastive_saliency import ContrastiveSaliency
 from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
