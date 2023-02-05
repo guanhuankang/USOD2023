@@ -41,5 +41,5 @@ class FrcPN(nn.Module):
         out = [features[0],]
         for i in range(n-2):
             out.append(self.frc[i](out[-1], features[i+1]))
-        out.append( self.conv1(out[-1])+self.conv2(features[-1]) )
+        out.append( self.conv1(F.interpolate(out[-1], size=features[-1].shape[2::], mode="bilinear"))+self.conv2(features[-1]) )
         return out
