@@ -81,7 +81,7 @@ class TestModel:
         model.train(False)
         with torch.no_grad():
             for i,name in enumerate(name_list):
-                img = transform(Image.open(os.path.join(tCfg.image.path, name+tCfg.image.suffix))).unsqueeze(0)
+                img = transform(Image.open(os.path.join(tCfg.image.path, name+tCfg.image.suffix)).convert("RGB")).unsqueeze(0)
                 mak = np.array(Image.open(os.path.join(tCfg.mask.path, name+tCfg.mask.suffix)).convert("L")).astype(float) / 255.0
                 mak = torch.tensor(mak).unsqueeze(0).unsqueeze(0).gt(0.5).float()
 

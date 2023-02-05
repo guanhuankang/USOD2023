@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from net.base.resnet50 import ResNet
 from net.base.frcpn import FrcPN
 from net.contrastive_saliency import ContrastiveSaliency
-from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
+from net.base.modules import weight_init, CRF, LocalWindowTripleLoss, UnFold
 
 def delayWarmUp(step, period, delay):
     return min(1.0, max(0.0, 1./period * step - delay/period))
@@ -21,6 +21,14 @@ def minMaxNorm(m, eps=1e-12):
 
 def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
+
+def uncertainEst(sal, s):
+    unfold = UnFold(kernel_size=11, padding=5)
+    unc = unfold(sal.gt(0.5).float()) ## b, c=1, window_size, h, w
+    unc = unc.mean(dim=2) ## 0.0~1.0
+    unc = torch.maximum(unc, 1.0 - unc) ## 0.5 ~1.0
+    unc = torch.pow(unc, s) ## s should be in [0, 2]: x--->0.0
+    return unc ## b,1,h,w
 
 class R50FrcPN(nn.Module):
     def __init__(self, cfg):
@@ -58,9 +66,12 @@ class R50FrcPN(nn.Module):
             alpha_other = delayWarmUp(step=global_step, period=ep_step * 20, delay=ep_step * 20)
             loss_dict = {"clloss": loss.item()}
 
-            sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=10).gt(0.5).float() ## stop gradient
+            sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=3).gt(0.5).float() ## stop gradient
             if alpha_bce>1e-3 and alpha_bce<0.999:
-                bceloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"bce_loss": bceloss.item()})
+                uncertain_est = uncertainEst(sal_cues, -2*alpha_bce+2.0) ## b,1,h,w
+                bceloss = F.binary_cross_entropy_with_logits(y, sal_cues, reduction="none") * uncertain_est
+                bceloss = bceloss.sum() / (uncertain_est.sum()+1e-6)
+                loss_dict.update({"bce_loss": bceloss.item()})
                 loss += bceloss
             if alpha_other>1e-3:
                 lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
