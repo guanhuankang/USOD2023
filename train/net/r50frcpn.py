@@ -35,7 +35,7 @@ class R50FrcPN(nn.Module):
         )
         self.initialize()
         self.crf = CRF()
-        self.lwt = LocalWindowTripleLoss(alpha=10.0)
+        self.lwt = LocalWindowTripleLoss(alpha=10.0, kernel=cfg.lwt_kernel)
 
     def initialize(self):
         weight_init(self.conv)

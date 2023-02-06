@@ -12,6 +12,7 @@
   "d_model": 512,
   "n_head": 8,
   "d_ff": 1024,
+  "lwt_kernel": 7,
   "crf": false,
 
   "mean": [124.55, 118.90, 102.94],

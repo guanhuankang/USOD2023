@@ -17,6 +17,7 @@ def go(name, cg, **kwargs):
     cfg.epoch = cg["epoch"]
     cfg.d_model = cg["d_model"]
     cfg.d_ff = cg["d_ff"]
+    cfg.lwt_kernel = cg["lwt_kernel"]
     cfg.name = name
     cfg.checkpointPath = "{}_checkpoint".format(name)
 
@@ -31,7 +32,9 @@ def go(name, cg, **kwargs):
 
 if __name__=='__main__':
     cfg = loadConfig()
-    cg = {"lr": cfg.lr, "bs": cfg.batchSize, "epoch": cfg.epoch, "d_model": cfg.d_model, "d_ff": cfg.d_ff}
+    cg = {"lr": cfg.lr, "bs": cfg.batchSize, "epoch": cfg.epoch, "d_model": cfg.d_model, "d_ff": cfg.d_ff, "lwt_kernel": cfg.lwt_kernel}
 
-    go("A", cg)
-    go("B", cg, lr=5e-3)
+    go("k15", cg, lwt_kernel=15)
+    go("k7", cg, lwt_kernel=7)
+    go("k5", cg, lwt_kernel=5)
+    go("k3", cg, lwt_kernel=3)

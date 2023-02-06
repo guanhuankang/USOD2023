@@ -183,9 +183,9 @@ class SmoothConv(nn.Module):
         return self.conv(x) / 9.0
 
 class LocalWindowTripleLoss(nn.Module):
-    def __init__(self, alpha=10.0):
+    def __init__(self, alpha=10.0, kernel=11):
         super().__init__()
-        self.unfold = UnFold(11, dilation=1, padding=0, stride=5)
+        self.unfold = UnFold(kernel, dilation=1, padding=0, stride=kernel//2)
         self.alpha = alpha
 
     def forward(self, map, feat, margin=0.5):
