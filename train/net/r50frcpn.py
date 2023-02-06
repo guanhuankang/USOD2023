@@ -36,6 +36,7 @@ class R50FrcPN(nn.Module):
         self.initialize()
         self.crf = CRF()
         self.lwt = LocalWindowTripleLoss(alpha=10.0)
+        self.tau = cfg.tau
 
     def initialize(self):
         weight_init(self.conv)
@@ -45,7 +46,7 @@ class R50FrcPN(nn.Module):
         f1, f2, f3, f4, f5 = self.backbone(x)
         f5, f4, f3, f2, f1 = self.decoder([f5, f4, f3, f2, f1])
         del f2,f3,f4; torch.cuda.empty_cache()
-        attn, loss = self.sal(self.conv(f5))
+        attn, loss = self.sal(self.conv(f5), tau=self.tau)
         y = self.head(f1)
         del f1, f5; torch.cuda.empty_cache()
 
