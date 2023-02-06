@@ -66,10 +66,12 @@ class R50FrcPN(nn.Module):
             if alpha_other>1e-3:
                 sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(torch.sigmoid(y).detach(), size=size)), iters=10)\
                     .gt(0.5).float() ## stop gradient
-                lwtloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"crfaslwt_loss": lwtloss.item()})
+                crfloss = F.binary_cross_entropy_with_logits(y, sal_cues); loss_dict.update({"crfloss": crfloss.item()})
+                lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
+
                 consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
                 uncerloss = 0.5 - torch.abs(torch.sigmoid(y) - 0.5).mean(); loss_dict.update({"uncertain_loss": uncerloss.item()})
-                loss += lwtloss * w[0] + consloss * w[1] + uncerloss * w[2]
+                loss += lwtloss * w[0] + consloss * w[1] + uncerloss * w[2] + crfloss * 1.0
 
             loss_dict.update({"tot_loss": loss.item()})
             if "sw" in kwargs:
