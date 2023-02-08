@@ -10,9 +10,6 @@
 
   "name": "other",
   "salPath": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Sal",
-  "d_model": 512,
-  "n_head": 8,
-  "d_ff": 1024,
   "crf": false,
 
   "size": [352,352],

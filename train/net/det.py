@@ -29,7 +29,6 @@ def IOU(pred, target):
     iou_loss = 1 - torch.sum(inter, dim=(1, 2, 3)) / (torch.sum(union, dim=(1, 2, 3)) + 1e-7)
     return iou_loss.mean()
 
-
 class Detector(nn.Module):
     def __init__(self, cfg):
         super().__init__()

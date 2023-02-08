@@ -36,9 +36,7 @@ class FrcPN(nn.Module):
         self.frc5 = FRC(2048, 1024)
         self.frc4 = FRC(1024, 512)
         self.frc3 = FRC(512, 256)
-        self.conv2 = nn.Sequential(nn.Conv2d(256, 64, 1), nn.BatchNorm2d(64), nn.ReLU())
-        self.conv1 = nn.Sequential(nn.Conv2d(64,  64, 1), nn.BatchNorm2d(64), nn.ReLU())
-        self.CBAM = CBAM(64)
+        self.frc2 = FRC(256, 64)
 
         self.head1 = nn.Sequential(
             nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
@@ -64,11 +62,11 @@ class FrcPN(nn.Module):
         f4 = self.frc5(f5, f4)
         f3 = self.frc4(f4, f3)
         f2 = self.frc3(f3, f2)
-        f1 = self.CBAM(self.conv2(f2) + self.conv1(f1))
+        f1 = self.frc2(f2, f1)
 
         p1 = self.head1(f1)
         p2 = self.head2(f2)
         p3 = self.head3(f3)
         p4 = self.head4(f4)
 
-        return [p1,p2,p3,p4]
+        return [p1, p2, p3, p4]

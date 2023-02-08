@@ -77,8 +77,8 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         out1 = F.relu(self.bn1(self.conv1(x)), inplace=True)
-        out1 = F.max_pool2d(out1, kernel_size=3, stride=2, padding=1)
-        out2 = self.layer1(out1)
+        out2 = F.max_pool2d(out1, kernel_size=3, stride=2, padding=1)
+        out2 = self.layer1(out2)
         out3 = self.layer2(out2)
         out4 = self.layer3(out3)
         out5 = self.layer4(out4)
