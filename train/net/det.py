@@ -7,7 +7,6 @@ from net.base.resnet50 import ResNet
 from net.base.frcpn import FrcPN
 from net.contrastive_saliency import ContrastiveSaliency
 from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
-from net.base.CBAM import CBAM
 
 def delayWarmUp(step, period, delay):
     return min(1.0, max(0.0, 1./period * step - delay/period))
@@ -35,35 +34,14 @@ class Detector(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.backbone = ResNet(cfg.backboneWeight)
-        self.decoder = FrcPN(dim_bin=[2048,1024,512,256,64])
-        self.head = nn.Sequential(
-            nn.Conv2d(256*3, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
-            nn.Conv2d(256, 1, 1)
-        )
-        self.fc1 = nn.Sequential(
-            nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
-        )
-        self.fc2 = nn.Sequential(
-            nn.Conv2d(256, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
-        )
-        self.fc3 = nn.Sequential(
-            nn.Conv2d(512, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
-        )
-        self.initialize()
-
-    def initialize(self):
-        weight_init(self.head)
-        weight_init(self.fc1)
-        weight_init(self.fc2)
-        weight_init(self.fc3)
+        self.decoder = FrcPN()
 
     def forward(self, x, global_step=0.0, mask=None, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
-        f5, f4, f3, f2, f1 = self.decoder([f5, f4, f3, f2, f1])
-        p = self.head(torch.cat([self.fc1(f1),self.fc2(f2),self.fc3(uphw(f3,size=f1.shape[2::]))], dim=1))
+        preds = self.decoder([f1,f2,f3,f4,f5])
 
         if self.training:
-            loss = IOU(torch.sigmoid(uphw(p, mask.shape[2::])), mask.gt(0.5).float())
+            loss = sum([IOU(torch.sigmoid(uphw(p, mask.shape[2::])), mask.gt(0.5).float()) for p in preds])
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item()}, global_step=global_step)
         else:
@@ -71,5 +49,5 @@ class Detector(nn.Module):
 
         return {
             "loss": loss,
-            "pred": torch.sigmoid(uphw(p, size=x.shape[2::]))
+            "pred": torch.sigmoid(uphw(preds[0], size=x.shape[2::]))
         }
