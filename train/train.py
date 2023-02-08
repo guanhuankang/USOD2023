@@ -31,8 +31,12 @@ def train(cfg):
     net.cuda()
     ## optimizer & logger
     optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay, gamma=0.1)
     sw = SummaryWriter(cfg.eventPath)
+    ## SWA
+    swa_model = torch.optim.swa_utils.AveragedModel(net)
+    swa_start = 5
+    swa_scheduler = torch.optim.swa_utils.SWALR(optimizer, swa_lr=0.05)
     ## parameter
     global_step = 0
     clock_begin = time.time()
@@ -66,13 +70,23 @@ def train(cfg):
                     %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
                       elase / 60, remain / 60), flush=True
                 )
-        ## epoch end/ start epoch test
-        scheduler.step()
+        ## scheduler update
+        if epoch>=swa_start:
+            swa_model.update_parameters(net)
+            swa_scheduler.step()
+            # torch.optim.swa_utils.update_bn(loader, swa_model)
+        else:
+            scheduler.step()
+
         if True:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
-            torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
+            # torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
+            torch.save(swa_model.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
+
             with torch.no_grad():
-                r = TestModel().test(tCfg=tCfg.DUT_OMRON, model=net, name=cfg.name+str(epoch+1), checkpoint=None, crf=0, save=False)
+                # r = TestModel().test(tCfg=tCfg.DUT_OMRON, model=net, name=cfg.name+str(epoch+1), checkpoint=None, crf=0, save=False)
+                r = TestModel().test(tCfg=tCfg.DUT_OMRON, model=swa_model, name=cfg.name+str(epoch+1), checkpoint=None, crf=0, save=False)
+
                 sw.add_scalars("val", r.head(1).to_dict("records")[0], global_step=epoch)
                 testResults.append({"epoch": epoch+1, "name": cfg.name} | r.head(1).to_dict("records")[0])
                 print(pd.DataFrame(testResults).set_index("epoch").sort_index(), flush=True)
