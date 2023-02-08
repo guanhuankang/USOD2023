@@ -45,7 +45,7 @@ class Detector(nn.Module):
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item()}, global_step=global_step)
         else:
-            loss = torch.zeros_like(p).mean()
+            loss = torch.zeros_like(f1).mean()
 
         return {
             "loss": loss,
