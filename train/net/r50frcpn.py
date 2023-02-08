@@ -70,6 +70,6 @@ class R50FrcPN(nn.Module):
 
         return {
             "loss": loss,
-            "pred": torch.sigmoid(uphw(preds[0], size=x.shape[2::])),
+            "pred": uphw(minMaxNorm(attn), size=x.shape[2::]) if (self.training and alpha_bce<1e-3) else torch.sigmoid(uphw(preds[0], size=x.shape[2::])),
             "attn": attn
         }
