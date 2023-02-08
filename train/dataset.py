@@ -64,7 +64,7 @@ class Data(Dataset):
             return image_tensor, image_tensor, mask
         else:
             test_transform = pth_transforms.Compose([
-                pth_transforms.Resize((352,352)),
+                pth_transforms.Resize(self.cfg.size),
                 pth_transforms.ToTensor(),
                 pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
             ])
@@ -81,12 +81,13 @@ class Data(Dataset):
         return torch.stack(image,dim=0), uint8_img, shape, name
 
     def collate(self, batch):
-        size = [224, 256, 288, 320, 352][-1]
+        # size = [224, 256, 288, 320, 352][-1]
+        size = self.cfg.size
         image0, image1, mask = [list(item) for item in zip(*batch)]
 
-        image0 = [F.interpolate(x.unsqueeze(0), size=(size, size), mode="bilinear") for x in image0]
-        # image1 = [F.interpolate(x.unsqueeze(0), size=(size, size), mode="bilinear") for x in image1]
-        mask   = [F.interpolate(x.unsqueeze(0), size=(size, size), mode="nearest") for x in mask]
+        image0 = [F.interpolate(x.unsqueeze(0), size=size, mode="bilinear") for x in image0]
+        # image1 = [F.interpolate(x.unsqueeze(0), size=size, mode="bilinear") for x in image1]
+        mask   = [F.interpolate(x.unsqueeze(0), size=size, mode="nearest") for x in mask]
 
         image = torch.cat(image0, dim=0)
         mask  = torch.cat(mask, dim=0)

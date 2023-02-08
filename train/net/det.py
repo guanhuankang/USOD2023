@@ -41,15 +41,12 @@ class Detector(nn.Module):
             nn.Conv2d(256, 1, 1)
         )
         self.fc1 = nn.Sequential(
-            CBAM(64),
             nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
         )
         self.fc2 = nn.Sequential(
-            CBAM(256),
             nn.Conv2d(256, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
         )
         self.fc3 = nn.Sequential(
-            CBAM(512),
             nn.Conv2d(512, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
         )
         self.initialize()
