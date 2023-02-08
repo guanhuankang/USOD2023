@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/det.iml" filepath="$PROJECT_DIR$/.idea/det.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/detlocal.iml" filepath="$PROJECT_DIR$/.idea/detlocal.iml" />
     </modules>
   </component>
 </project>

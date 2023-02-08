@@ -23,13 +23,12 @@ def minMaxNorm(m, eps=1e-12):
 def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
 
-def headLoss(y, p):
-    p = torch.sigmoid(p)
-    y = y.gt(0.5).float()
-    inter = (p * y).mean(dim=[1,2,3])
-    union = (p + y).mean(dim=[1,2,3]) - inter
-    iou = (inter + 1e-6) / (union + 1e-6)
-    return (1.0 - iou).mean()
+def IOU(pred, target):
+    inter = target * pred
+    union = target + pred - target * pred
+    iou_loss = 1 - torch.sum(inter, dim=(1, 2, 3)) / (torch.sum(union, dim=(1, 2, 3)) + 1e-7)
+    return iou_loss.mean()
+
 
 class Detector(nn.Module):
     def __init__(self, cfg):
@@ -37,21 +36,33 @@ class Detector(nn.Module):
         self.backbone = ResNet(cfg.backboneWeight)
         self.decoder = FrcPN(dim_bin=[2048,1024,512,256,64])
         self.head = nn.Sequential(
-            nn.Conv2d(256, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
+            nn.Conv2d(256*3, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
             nn.Conv2d(256, 1, 1)
+        )
+        self.fc1 = nn.Sequential(
+            nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
+        )
+        self.fc2 = nn.Sequential(
+            nn.Conv2d(256, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
+        )
+        self.fc3 = nn.Sequential(
+            nn.Conv2d(512, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
         )
         self.initialize()
 
     def initialize(self):
         weight_init(self.head)
+        weight_init(self.fc1)
+        weight_init(self.fc2)
+        weight_init(self.fc3)
 
     def forward(self, x, global_step=0.0, mask=None, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
         f5, f4, f3, f2, f1 = self.decoder([f5, f4, f3, f2, f1])
-        p = self.head(f2)
+        p = self.head(torch.cat([self.fc1(f1),self.fc2(f2),self.fc3(uphw(f3,size=f1.shape[2::]))], dim=1))
 
         if self.training:
-            loss = headLoss(uphw(mask, p.shape[2::]).gt(0.5).float(), p)
+            loss = IOU(torch.sigmoid(uphw(p, mask.shape[2::])), mask.gt(0.5).float())
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", {"tot_loss": loss.item()}, global_step=global_step)
         else:

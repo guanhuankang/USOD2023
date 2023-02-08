@@ -15,14 +15,12 @@
   "d_ff": 1024,
   "crf": false,
 
-  "mean": [124.55, 118.90, 102.94],
-  "std": [ 56.77,  55.97,  57.50],
   "size": [352,352],
-  "batchSize": 16,
-  "lr": 0.002,
+  "batchSize": 8,
+  "lr": 0.005,
   "momentum": 0.9,
   "weightDecay": 5e-4,
-  "epoch": 40,
-  "epoch_lr_delay": 40,
+  "epoch": 10,
+  "epoch_lr_delay": 10,
   "numWorkers": 4
 }

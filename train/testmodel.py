@@ -71,7 +71,7 @@ class TestModel:
         transform = pth_transforms.Compose([
             pth_transforms.Resize((352,352)),
             pth_transforms.ToTensor(),
-            pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+            pth_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
         ])
         widgets = ["[",progressbar.Timer(),"]",progressbar.Bar("*"),"(",progressbar.ETA(),")"]
         bar = progressbar.ProgressBar(maxval=len(name_list), widgets=widgets).start()
@@ -111,17 +111,17 @@ if __name__=="__main__":
     from common import loadConfig, loadConfigByPath
     from network import Network
     cfg = loadConfig()
-    tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS
+    tCfg = loadConfigByPath(cfg.datasetCfgPath).DUT_OMRON
     net = Network(cfg).cuda()
     testModel = TestModel()
     print(tCfg, flush=True)
 
-    ckp_folder = ["weights"]
+    ckp_folder = ["checkpoint"]
     ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
     results = []
     for ckp in ckps:
         print(ckp, "...", flush=True)
-        r = testModel.test(tCfg, name=ckp, model=net, crf=1, save=True, checkpoint=ckp)
+        r = testModel.test(tCfg, name=ckp, model=net, crf=0, save=False, checkpoint=ckp)
         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
     pd.DataFrame(results).to_csv("output/results.csv")
     print(pd.DataFrame(results), flush=True)
