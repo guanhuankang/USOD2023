@@ -72,7 +72,7 @@ def train(cfg):
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
             torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
             with torch.no_grad():
-                r = TestModel().test(tCfg=tCfg.DUTS, model=net, name=cfg.name+str(epoch+1), checkpoint=None, crf=0, save=False)
+                r = TestModel().test(tCfg=tCfg.DUTS_TR, model=net, name=cfg.name+str(epoch+1), checkpoint=None, crf=0, save=False)
                 sw.add_scalars("val", r.head(1).to_dict("records")[0], global_step=epoch)
                 testResults.append({"epoch": epoch+1, "name": cfg.name} | r.head(1).to_dict("records")[0])
                 print(pd.DataFrame(testResults).set_index("epoch").sort_index(), flush=True)

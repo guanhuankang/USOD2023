@@ -9,13 +9,8 @@
   "eventPath": "./event",
 
   "name": "other",
-  "d_model": 512,
-  "n_head": 8,
-  "d_ff": 1024,
   "crf": false,
 
-  "mean": [124.55, 118.90, 102.94],
-  "std": [ 56.77,  55.97,  57.50],
   "size": [352,352],
   "batchSize": 16,
   "lr": 0.001,
