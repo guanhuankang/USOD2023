@@ -12,7 +12,7 @@
   "crf": false,
 
   "size": [352,352],
-  "batchSize": 4,
+  "batchSize": 8,
   "lr": 0.001,
   "momentum": 0.9,
   "weightDecay": 5e-4,
