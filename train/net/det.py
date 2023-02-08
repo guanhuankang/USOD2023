@@ -7,6 +7,7 @@ from net.base.resnet50 import ResNet
 from net.base.frcpn import FrcPN
 from net.contrastive_saliency import ContrastiveSaliency
 from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
+from net.base.CBAM import CBAM
 
 def delayWarmUp(step, period, delay):
     return min(1.0, max(0.0, 1./period * step - delay/period))
@@ -40,12 +41,15 @@ class Detector(nn.Module):
             nn.Conv2d(256, 1, 1)
         )
         self.fc1 = nn.Sequential(
+            CBAM(64),
             nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
         )
         self.fc2 = nn.Sequential(
+            CBAM(256),
             nn.Conv2d(256, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
         )
         self.fc3 = nn.Sequential(
+            CBAM(512),
             nn.Conv2d(512, 256, 1), nn.BatchNorm2d(256), nn.ReLU()
         )
         self.initialize()

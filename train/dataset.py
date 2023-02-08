@@ -48,20 +48,20 @@ class Data(Dataset):
 
         if self.cfg.mode=='train':
             mask = mask_transform(Image.open(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix)).convert("L"))
-            sal  = mask_transform(Image.open(os.path.join(self.cfg.salPath, name + ".png")).convert("L"))
+            # sal  = mask_transform(Image.open(os.path.join(self.cfg.salPath, name + ".png")).convert("L"))
 
-            view_image = Image.fromarray(view_transform(image=np.array(image, dtype=np.uint8))["image"])
-            view_image_tensor = image_transform(view_image)
+            # view_image = Image.fromarray(view_transform(image=np.array(image, dtype=np.uint8))["image"])
+            # view_image_tensor = image_transform(view_image)
             image_tensor = image_transform(image)
 
             ## flipping
             if np.random.rand()>=0.5:
                 mask = torch.flip(mask, dims=[-1])
-                sal  = torch.flip(sal , dims=[-1])
+                # sal  = torch.flip(sal , dims=[-1])
                 image_tensor = torch.flip(image_tensor, dims=[-1])
-                view_image_tensor = torch.flip(view_image_tensor, dims=[-1])
+                # view_image_tensor = torch.flip(view_image_tensor, dims=[-1])
 
-            return image_tensor, view_image_tensor, sal
+            return image_tensor, image_tensor, mask
         else:
             test_transform = pth_transforms.Compose([
                 pth_transforms.Resize((352,352)),
@@ -85,7 +85,7 @@ class Data(Dataset):
         image0, image1, mask = [list(item) for item in zip(*batch)]
 
         image0 = [F.interpolate(x.unsqueeze(0), size=(size, size), mode="bilinear") for x in image0]
-        image1 = [F.interpolate(x.unsqueeze(0), size=(size, size), mode="bilinear") for x in image1]
+        # image1 = [F.interpolate(x.unsqueeze(0), size=(size, size), mode="bilinear") for x in image1]
         mask   = [F.interpolate(x.unsqueeze(0), size=(size, size), mode="nearest") for x in mask]
 
         image = torch.cat(image0, dim=0)

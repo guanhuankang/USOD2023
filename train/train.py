@@ -30,8 +30,10 @@ def train(cfg):
     net.train(True)
     net.cuda()
     ## optimizer & logger
-    optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=cfg.momentum, weight_decay=cfg.weightDecay)
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay)
+    encoder_params = dict( (k,v) for k,v in net.named_parameters() if "backbone" in k )
+    decoder_params = dict( (k,v) for k,v in net.named_parameters() if "backbone" not in k )
+    optimizer = torch.optim.SGD([{"params": decoder_params}, {"params": encoder_params, "lr": 5e-4}], lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay, gamma=0.5)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
     global_step = 0
@@ -42,7 +44,7 @@ def train(cfg):
     testResults = []
 
     for epoch in range(cfg.epoch):
-        optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
+        # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
         net.train(True)
         for step, (image, mask) in enumerate(loader):
@@ -67,7 +69,7 @@ def train(cfg):
                       elase / 60, remain / 60), flush=True
                 )
         ## epoch end/ start epoch test
-        # scheduler.step()
+        scheduler.step()
         if True:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
             torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
