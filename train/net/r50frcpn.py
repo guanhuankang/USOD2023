@@ -56,8 +56,8 @@ class R50FrcPN(nn.Module):
             alpha_other = delayWarmUp(step=global_step, period=ep_step * 20, delay=ep_step * 20)
             loss_dict = {"clloss": loss.item()}
 
-            sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=10).gt(0.5).float() ## stop gradient
             if alpha_bce>1e-3 and alpha_bce<0.999:
+                sal_cues = self.crf(uphw(minMaxNorm(x),size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=10).gt(0.5).float() ## stop gradient
                 bceloss = sum([F.binary_cross_entropy_with_logits(uphw(y, size=size), sal_cues) for y in preds]); loss_dict.update({"bce_loss": bceloss.item()})
                 loss += bceloss
             if alpha_other>1e-3:
