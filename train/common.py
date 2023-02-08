@@ -21,8 +21,9 @@ def loadConfig():
         return loadConfigByPath(os.path.join(getCurrentDirectory(), "cfg/config_other.json"))
 
 def loadConfigByPath(configPath):
+    cvtkey = lambda x: dict( (k.replace("-","_"),v) for k,v in x.items() )
     with open(configPath, "r") as f:
-        cfg = json.load(f, object_hook=lambda x: SimpleNamespace(**x))
+        cfg = json.load(f, object_hook=lambda x: SimpleNamespace(**cvtkey(x)))
     return cfg
 
 def loadJson(filepath):

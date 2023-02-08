@@ -110,7 +110,7 @@ if __name__=="__main__":
     from common import loadConfig, loadConfigByPath
     from network import Network
     cfg = loadConfig()
-    tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS
+    tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS_TR
     net = Network(cfg).cuda()
     testModel = TestModel()
     print(tCfg, flush=True)
