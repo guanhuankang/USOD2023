@@ -30,9 +30,10 @@ def train(cfg):
     net.train(True)
     net.cuda()
     ## optimizer & logger
-    encoder_params = dict( (k,v) for k,v in net.named_parameters() if "backbone" in k )
-    decoder_params = dict( (k,v) for k,v in net.named_parameters() if "backbone" not in k )
-    optimizer = torch.optim.SGD([{"params": decoder_params}, {"params": encoder_params, "lr": 5e-4}], lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
+    optimizer = torch.optim.SGD([
+        {"params": net.model.decoder}, {"params": net.model.head}, {"params": net.model.fc1}, {"params": net.model.fc2}, {"params": net.model.fc3},
+        {"params": net.model.backbone, "lr": 5e-4}
+    ], lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay, gamma=0.5)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
