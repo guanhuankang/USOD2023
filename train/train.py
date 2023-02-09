@@ -41,6 +41,8 @@ def train(cfg):
     ## testmodel
     tCfg = loadConfigByPath(cfg.datasetCfgPath)
     testResults = []
+    ## avg
+    loss_avg = Avg()
 
     for epoch in range(cfg.epoch):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
@@ -61,19 +63,22 @@ def train(cfg):
             global_step += 1
             sw.add_scalar('lr'   , optimizer.param_groups[0]['lr'], global_step=global_step/tot_iter)
             sw.add_scalars('loss', {"visible_loss":loss.item()}, global_step=global_step/tot_iter)
+
+            ## avg
+            loss_avg.update(loss.item())
             if step%10 == 0 or True:
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
                 s = 'epoch:{}/{} | {:1.2f}% | lr={:1.5f} | loss={:1.3f} | elase={:1.2f}min | remain={:1.2f}min, progress$'.format(
                     epoch+1, cfg.epoch, global_step/tot_iter*100.0,
-                    optimizer.param_groups[0]['lr'], loss.item(), elase / 60, remain / 60
+                    optimizer.param_groups[0]['lr'], loss_avg(), elase / 60, remain / 60
                 )
                 bar.bar_prefix = s
             bar.next()
 
-
         ## epoch end/ start epoch test
         scheduler.step()
+
         if epoch>=0:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)
             torch.save(net.state_dict(), os.path.join(cfg.checkpointPath, "model-{}-{}.pth".format(epoch+1, cfg.name)))
