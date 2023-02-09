@@ -75,16 +75,16 @@ class R50FrcPN(nn.Module):
             loss = cl_loss + bce_loss + lwt_loss
 
             loss_dict = {
-                "cl": cl_loss.item(),
-                "bce0": bce_loss_0.item(),
-                "bce1": bce_loss_1.item(),
-                "bce2": bce_loss_2.item(),
-                "bce3": bce_loss_3.item(),
-                "bce4": bce_loss_4.item(),
-                "bce5": bce_loss_5.item(),
-                "bce": bce_loss.item(),
-                "lwt": lwt_loss.item(),
-                "tot": loss.item()
+                "cl": float(cl_loss),
+                "bce0": float(bce_loss_0),
+                "bce1": float(bce_loss_1),
+                "bce2": float(bce_loss_2),
+                "bce3": float(bce_loss_3),
+                "bce4": float(bce_loss_4),
+                "bce5": float(bce_loss_5),
+                "bce": float(bce_loss),
+                "lwt": float(lwt_loss),
+                "tot": float(loss)
             }
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", loss_dict, global_step=kwargs["global_step"])
