@@ -74,7 +74,7 @@ def train(cfg):
         if epoch>=swa_start:
             swa_model.update_parameters(net)
             swa_scheduler.step()
-            # torch.optim.swa_utils.update_bn(loader, swa_model)
+            torch.optim.swa_utils.update_bn(loader, swa_model)
         else:
             scheduler.step()
 
