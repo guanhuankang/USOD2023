@@ -32,7 +32,8 @@ def train(cfg):
     net.cuda()
     ## optimizer & logger
     optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=cfg.T_0, eta_min=cfg.eta_min)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=cfg.T_0, eta_min=cfg.eta_min)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.T_0, gamma=0.1)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
     global_step = 0
@@ -78,21 +79,25 @@ def train(cfg):
             attn_avg.update(out["attn"].mean().item())
             pred_avg.update(out["pred"].mean().item())
             mask_avg.update(mask.gt(0.5).float().mean().item())
+            cur_lr = optimizer.param_groups[0]['lr']
 
             if step%10 == 0 or True:
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
                 s = 'epoch:{}/{} | {:1.2f}% | lr={:1.5f} | loss={:1.3f} [cl={:1.3f} bce={:1.3f} lwt={:1.3f}] | elase={:1.2f}min | remain={:1.2f}min | attn={:1.3f} | pred={:1.3f} | mask={:1.3f} progress$'.format(
                     epoch+1, cfg.epoch, global_step/tot_iter*100.0,
-                    optimizer.param_groups[0]['lr'], loss_avg(), cl_avg(), bce_avg(), lwt_avg(),
+                    cur_lr, loss_avg(), cl_avg(), bce_avg(), lwt_avg(),
                     elase / 60, remain / 60,
                     attn_avg(), pred_avg(), mask_avg()
                 )
                 bar.bar_prefix = s
             bar.next()
 
-        ## epoch end/ start epoch test
-        scheduler.step()
+        ## scheduler
+        if cur_lr>(cfg.eta_min+1e-9):
+            scheduler.step()
+        else:
+            pass
 
         if epoch>=0:
             if not os.path.exists(cfg.checkpointPath): os.makedirs(cfg.checkpointPath)

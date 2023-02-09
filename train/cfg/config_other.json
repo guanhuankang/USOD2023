@@ -14,8 +14,8 @@
   "size": [352,352],
   "batchSize": 8,
   "lr": 0.01,
-  "T_0": 5,
-  "eta_min": 1e-3,
+  "T_0": 10,
+  "eta_min": 1e-4,
   "epoch": 80,
   "epoch_lr_delay": 80,
   "numWorkers": 4
