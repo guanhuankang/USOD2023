@@ -73,6 +73,6 @@ class R50FrcPN(nn.Module):
         return {
             "loss": loss,
             "pred": torch.sigmoid(uphw(preds[0], size=x.shape[2::])),
-            "attn": sal_cues,
+            "attn": sal_cues if self.training else minMaxNorm(attn),
             "loss_dict": loss_dict
         }
