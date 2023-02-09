@@ -51,27 +51,28 @@ class R50FrcPN(nn.Module):
         loss_dict = {"clloss": loss.item()}
 
         if self.training:
-            size = x.shape[2::]
+            size = preds[0].shape[2::]
             final = preds[0]
             sal_cues = self.crf(uphw(minMaxNorm(x), size=size), minMaxNorm(uphw(attn.detach(), size=size)),
                                 iters=10).gt(0.5).float()  ## stop gradient
 
             auxloss = sum([F.binary_cross_entropy_with_logits(uphw(y, size=size), sal_cues) for y in preds[1::]])
             bceloss = F.binary_cross_entropy_with_logits(uphw(final, size=size), sal_cues)
-            loss_dict.update({"bce_loss": bceloss.item()})
+            loss_dict.update({"bceloss": bceloss.item()})
 
             lwtloss = self.lwtLoss(final, img=x)
-            loss_dict.update({"lwtLoss": lwtloss.item()})
+            loss_dict.update({"lwtloss": lwtloss.item()})
 
             alpha = float(min(torch.abs(torch.sigmoid(final).mean() - sal_cues.mean()) / (sal_cues.mean() + 1e-6), 1.0)) ## 0.0~1.0
             loss += alpha * bceloss + (1.0-alpha) * lwtloss + auxloss
 
-            loss_dict.update({"tot_loss": loss.item()})
+            loss_dict.update({"totloss": loss.item()})
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("train_loss", loss_dict, global_step=global_step)
 
         return {
             "loss": loss,
             "pred": torch.sigmoid(uphw(preds[0], size=x.shape[2::])),
-            "attn": attn
+            "attn": attn,
+            "loss_dict": loss_dict
         }
