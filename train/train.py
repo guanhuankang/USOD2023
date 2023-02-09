@@ -48,6 +48,7 @@ def train(cfg):
     cl_avg = Avg()
     attn_avg = Avg()
     pred_avg = Avg()
+    mask_avg = Avg()
 
     for epoch in range(cfg.epoch):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
@@ -76,15 +77,16 @@ def train(cfg):
             lwt_avg.update(out["loss_dict"]["lwtloss"])
             attn_avg.update(out["attn"].mean().item())
             pred_avg.update(out["pred"].mean().item())
+            mask_avg.update(mask.gt(0.5).float().mean().item())
 
             if step%10 == 0 or True:
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
-                s = 'epoch:{}/{} | {:1.2f}% | lr={:1.5f} | loss={:1.3f} [cl={:1.3f} bce={:1.3f} lwt={:1.3f}] | elase={:1.2f}min | remain={:1.2f}min | attn={:1.3f} | pred={:1.3f} progress$'.format(
+                s = 'epoch:{}/{} | {:1.2f}% | lr={:1.5f} | loss={:1.3f} [cl={:1.3f} bce={:1.3f} lwt={:1.3f}] | elase={:1.2f}min | remain={:1.2f}min | attn={:1.3f} | pred={:1.3f} | mask={:1.3f} progress$'.format(
                     epoch+1, cfg.epoch, global_step/tot_iter*100.0,
                     optimizer.param_groups[0]['lr'], loss_avg(), cl_avg(), bce_avg(), lwt_avg(),
                     elase / 60, remain / 60,
-                    attn_avg(), pred_avg()
+                    attn_avg(), pred_avg(), mask_avg()
                 )
                 bar.bar_prefix = s
             bar.next()
