@@ -9,7 +9,7 @@
   "eventPath": "./event",
 
   "name": "work",
-  "salPath": "D:\\2023ICCVUSOD\\dataset\\DUTS\\DUTS-TR\\DUTS-TR-Mask",
+  "salPath": "D:\\2023ICCVUSOD\\dataset\\DUTS\\DUTS-TR\\DUTS-TR-Sal",
   "d_model": 512,
   "n_head": 8,
   "d_ff": 1024,

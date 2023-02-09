@@ -48,7 +48,7 @@ class Data(Dataset):
 
         if self.cfg.mode=='train':
             mask = mask_transform(Image.open(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix)).convert("L"))
-            # sal  = mask_transform(Image.open(os.path.join(self.cfg.salPath, name + ".png")).convert("L"))
+            sal  = mask_transform(Image.open(os.path.join(self.cfg.salPath, name + ".png")).convert("L"))
 
             view_image = Image.fromarray(view_transform(image=np.array(image, dtype=np.uint8))["image"])
             view_image_tensor = image_transform(view_image)
@@ -57,11 +57,11 @@ class Data(Dataset):
             ## flipping
             if np.random.rand()>=0.5:
                 mask = torch.flip(mask, dims=[-1])
-                # sal  = torch.flip(sal , dims=[-1])
+                sal  = torch.flip(sal , dims=[-1])
                 image_tensor = torch.flip(image_tensor, dims=[-1])
                 view_image_tensor = torch.flip(view_image_tensor, dims=[-1])
 
-            return image_tensor, view_image_tensor, mask
+            return image_tensor, view_image_tensor, sal
         else:
             test_transform = pth_transforms.Compose([
                 pth_transforms.Resize(self.cfg.size),
