@@ -45,7 +45,7 @@ def train(cfg):
     ## avg
     loss_avg = Avg()
     bce_avg = Avg()
-    p0_avg = Avg
+    p0_avg = Avg()
     lwt_avg = Avg()
     cl_avg = Avg()
     sal_avg = Avg()
