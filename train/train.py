@@ -89,10 +89,10 @@ def train(cfg):
             if True:
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
-                s = 'epoch:{}/{} | {:1.2f}% | ' + \
+                s = ('epoch:{}/{} | {:1.2f}% | ' + \
                     'lr={:1.5f} | loss={:1.3f} [cl={:1.3f} bce={:1.3f} lwt={:1.3f} p0_bce={:1.3f}] | ' + \
                     'elase={:1.2f}min | remain={:1.2f}min | ' + \
-                    'sal={:1.3f} | pred={:1.3f} | mask={:1.3f} $'.format(
+                    'sal={:1.3f} | pred={:1.3f} | mask={:1.3f} $').format(
                     epoch, cfg.epoch, global_step/tot_iter*100.0,
                     cur_lr, loss_avg(), cl_avg(), bce_avg(), lwt_avg(), p0_avg(),
                     elase / 60, remain / 60,
