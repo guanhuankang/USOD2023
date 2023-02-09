@@ -14,10 +14,10 @@
 
   "size": [352,352],
   "batchSize": 4,
-  "lr": 0.001,
-  "momentum": 0.9,
-  "weightDecay": 5e-4,
-  "epoch": 40,
-  "epoch_lr_delay": 50,
+  "lr": 0.01,
+  "T_0": 10,
+  "eta_min": 1e-3,
+  "epoch": 80,
+  "epoch_lr_delay": 80,
   "numWorkers": 2
 }

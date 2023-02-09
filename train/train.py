@@ -16,6 +16,7 @@ from common import *
 from network import Network
 from loader import Loader
 from testmodel import TestModel
+from progress.bar import Bar
 
 def train(cfg):
     cfg.mode = "train"
@@ -30,8 +31,8 @@ def train(cfg):
     net.train(True)
     net.cuda()
     ## optimizer & logger
-    optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=cfg.momentum, weight_decay=cfg.weightDecay)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay, gamma=0.1)
+    optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=cfg.T_0, eta_min=cfg.eta_min)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
     global_step = 0
@@ -45,6 +46,7 @@ def train(cfg):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
         net.train(True)
+        bar = Bar(max=len(loader))
         for step, (image, mask) in enumerate(loader):
             optimizer.zero_grad()
             image, mask = image.cuda().float(), mask.cuda().float()
@@ -59,13 +61,17 @@ def train(cfg):
             global_step += 1
             sw.add_scalar('lr'   , optimizer.param_groups[0]['lr'], global_step=global_step/tot_iter)
             sw.add_scalars('loss', {"visible_loss":loss.item()}, global_step=global_step/tot_iter)
-            if step%10 == 0:
+            if step%10 == 0 or True:
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
-                print('%s | %.2f%% | step:%d/%d/%d | lr=%.6f | loss=%.6f | elase=%.1fmin | remain=%.1fmin'
-                    %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
-                      elase / 60, remain / 60), flush=True
+                s = 'epoch:{}/{} | {:1.2f}% | lr={:1.5f} | loss={:1.3f} | elase={:1.2f}min | remain={:1.2f}min, progress$'.format(
+                    epoch+1, cfg.epoch, global_step/tot_iter*100.0,
+                    optimizer.param_groups[0]['lr'], loss.item(), elase / 60, remain / 60
                 )
+                bar.bar_prefix = s
+            bar.next()
+
+
         ## epoch end/ start epoch test
         scheduler.step()
         if epoch>=0:
