@@ -1,7 +1,7 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
   "snapShot": "",
-  "backboneWeight": "/home/ti3/hkguan/dataset/dino_resnet50_pretrain.pth",
+  "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
@@ -13,10 +13,10 @@
 
   "size": [352,352],
   "batchSize": 8,
-  "lr": 0.001,
+  "lr": 0.01,
   "momentum": 0.9,
   "weightDecay": 5e-4,
-  "epoch": 40,
-  "epoch_lr_delay": 50,
+  "epoch": 120,
+  "epoch_lr_delay": 80,
   "numWorkers": 4
 }
