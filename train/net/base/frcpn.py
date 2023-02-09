@@ -40,6 +40,10 @@ class FrcPN(nn.Module):
         self.conv1 = nn.Sequential(nn.Conv2d(64,  64, 1), nn.BatchNorm2d(64), nn.ReLU())
         self.CBAM = CBAM(64)
 
+        self.head0 = nn.Sequential(
+            nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
+            nn.Conv2d(256, 1, 1)
+        )
         self.head1 = nn.Sequential(
             nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
             nn.Conv2d(256, 1, 1)
@@ -56,6 +60,10 @@ class FrcPN(nn.Module):
             nn.Conv2d(1024, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
             nn.Conv2d(256, 1, 1)
         )
+        self.head5 = nn.Sequential(
+            nn.Conv2d(2048, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
+            nn.Conv2d(256, 1, 1)
+        )
 
     def forward(self, features):
         uphw = lambda x,size: F.interpolate(x, size=size, mode="bilinear", align_corners=True)
@@ -66,9 +74,11 @@ class FrcPN(nn.Module):
         f2 = self.frc3(f3, f2)
         f1 = self.CBAM(self.conv2(f2) + self.conv1(f1))
 
+        p0 = self.head0(f1)
         p1 = self.head1(f1)
         p2 = self.head2(f2)
         p3 = self.head3(f3)
         p4 = self.head4(f4)
+        p5 = self.head5(f5)
 
-        return [p1,p2,p3,p4]
+        return p0, p1, p2, p3, p4, p5

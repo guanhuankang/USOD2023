@@ -35,49 +35,65 @@ class R50FrcPN(nn.Module):
         self.crf = CRF()
         self.lwt = LocalWindowTripleLoss(kernel_size=21)
 
-    def lwtLoss(self, y, img):
-        N = len(y) // 2
-        y = torch.sigmoid(y)
-        img = minMaxNorm(img)
+    def lwtLoss(self, p, img):
+        N = len(p) // 2
+        y = torch.sigmoid(p)
         lwtloss = self.lwt(y, img, margin=0.5)
         consloss = F.l1_loss(y[0:N], y[N::])
         uncerloss = 0.5 - torch.abs(y - 0.5).mean()
         return lwtloss + consloss + uncerloss
 
-    def forward(self, x, global_step=0.0, **kwargs):
+    def CELoss(self, p, y):
+        y = uphw(y.detach(), size=p.shape[2::])
+        return F.binary_cross_entropy_with_logits(p, y.gt(0.5).float())
+
+    def crfCELoss(self, p, y, img):
+        size = p.shape[2::]
+        y = self.crf(uphw(img, size=size), minMaxNorm(uphw(y.detach(), size=size)), iters=10).gt(0.5).float()
+        return F.binary_cross_entropy_with_logits(p, y)
+
+    def forward(self, x, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
-        attn, loss = self.sal(self.conv(f5))
-        preds = self.decoder([f1, f2, f3, f4, f5])
-        loss_dict = {"clloss": loss.item(), "bceloss": 0.0, "lwtloss": 0.0}
+        attn, cl_loss = self.sal(self.conv(f5))
+        p0, p1, p2, p3, p4, p5 = self.decoder([f1, f2, f3, f4, f5])
 
-        has_sal_cues = False
-        test_attn = False
         if self.training:
-            size = preds[0].shape[2::]
+            sal = minMaxNorm(attn.detach())
+            img = minMaxNorm(x)
             epoch = kwargs["epoch"]
-            final = preds[0]
-            if epoch<5:
-                test_attn = True
-            elif epoch<15:
-                sal_cues = self.crf(uphw(minMaxNorm(x), size=size), minMaxNorm(uphw(attn.detach(), size=size)),
-                                    iters=10).gt(0.5).float()  ## stop gradient
-                has_sal_cues = True
-                auxloss = sum([F.binary_cross_entropy_with_logits(uphw(y, size=size), sal_cues) for y in preds[1::]])
-                bceloss = F.binary_cross_entropy_with_logits(uphw(final, size=size), sal_cues)
-                loss_dict.update({"bceloss": bceloss.item()})
-                loss += auxloss + bceloss
-            else:
-                lwtloss = self.lwtLoss(final, img=x)
-                loss_dict.update({"lwtloss": lwtloss.item()})
-                loss += lwtloss
+            m0, m1, m2, m3, m4, m5 = torch.sigmoid(p0), torch.sigmoid(p1), torch.sigmoid(p2), torch.sigmoid(p3),\
+                                     torch.sigmoid(p4), torch.sigmoid(p5)
 
-            loss_dict.update({"totloss": loss.item()})
+            bce_loss_4 = self.crfCELoss(p4, sal, img) if (epoch>=6 and epoch<=10) else (self.crfCELoss(p4, m5, img) if epoch>10 else 0.0)
+            bce_loss_3 = self.crfCELoss(p3, m4, img) if epoch >= 7 else 0.0
+            bce_loss_2 = self.crfCELoss(p2, m3, img) if epoch >= 8 else 0.0
+            bce_loss_1 = self.crfCELoss(p1, m2, img) if epoch >= 9 else 0.0
+            bce_loss_0 = self.crfCELoss(p0, m2, img) if epoch >= 9 else 0.0
+            bce_loss_5 = self.CELoss(p5, p1) if epoch>=10 else 0.0
+            bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_2 + bce_loss_3 + bce_loss_4 + bce_loss_5
+            lwt_loss = self.lwtLoss(p0, img) if epoch>10 else 0.0
+            loss = cl_loss + bce_loss + lwt_loss
+
+            loss_dict = {
+                "cl": cl_loss.item(),
+                "bce0": bce_loss_0.item(),
+                "bce1": bce_loss_1.item(),
+                "bce2": bce_loss_2.item(),
+                "bce3": bce_loss_3.item(),
+                "bce4": bce_loss_4.item(),
+                "bce5": bce_loss_5.item(),
+                "bce": bce_loss.item(),
+                "lwt": lwt_loss.item(),
+                "tot": loss.item()
+            }
             if "sw" in kwargs:
-                kwargs["sw"].add_scalars("train_loss", loss_dict, global_step=global_step)
+                kwargs["sw"].add_scalars("loss", loss_dict, global_step=kwargs["global_step"])
 
+        test_attn = self.training and epoch<=5
         return {
-            "loss": loss,
-            "pred": torch.sigmoid(uphw(preds[0], size=x.shape[2::])) if not test_attn else minMaxNorm(attn.detach()),
-            "attn": sal_cues if has_sal_cues else minMaxNorm(attn.detach()),
-            "loss_dict": loss_dict
+            "loss": loss if self.training else 0.0,
+            "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])) if (not test_attn) else sal,
+            "attn": attn,
+            "sal": sal if self.training else attn,
+            "loss_dict": loss_dict if self.training else {}
         }
