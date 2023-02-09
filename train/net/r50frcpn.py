@@ -51,25 +51,25 @@ class R50FrcPN(nn.Module):
         loss_dict = {"clloss": loss.item(), "bceloss": 0.0, "lwtloss": 0.0}
 
         has_sal_cues = False
+        test_attn = False
         if self.training:
             size = preds[0].shape[2::]
             epoch = kwargs["epoch"]
             final = preds[0]
-            if epoch>=5:
-                if epoch%5==0:
-                    sal_cues = self.crf(uphw(minMaxNorm(x), size=size), minMaxNorm(uphw(attn.detach(), size=size)),
-                                        iters=10).gt(0.5).float()  ## stop gradient
-                    has_sal_cues = True
-                    auxloss = sum([F.binary_cross_entropy_with_logits(uphw(y, size=size), sal_cues) for y in preds[1::]])
-                    bceloss = F.binary_cross_entropy_with_logits(uphw(final, size=size), sal_cues)
-                    loss_dict.update({"bceloss": bceloss.item()})
-                    loss += auxloss + bceloss
-                else:
-                    lwtloss = self.lwtLoss(final, img=x)
-                    loss_dict.update({"lwtloss": lwtloss.item()})
-                    loss += lwtloss
-                #alpha = float(min(torch.abs(torch.sigmoid(final).mean() - sal_cues.mean()) / (sal_cues.mean() + 1e-6), 1.0)) ## 0.0~1.0
-                # loss += alpha * bceloss + (1.0-alpha) * lwtloss + auxloss
+            if epoch<5:
+                test_attn = True
+            elif epoch<15:
+                sal_cues = self.crf(uphw(minMaxNorm(x), size=size), minMaxNorm(uphw(attn.detach(), size=size)),
+                                    iters=10).gt(0.5).float()  ## stop gradient
+                has_sal_cues = True
+                auxloss = sum([F.binary_cross_entropy_with_logits(uphw(y, size=size), sal_cues) for y in preds[1::]])
+                bceloss = F.binary_cross_entropy_with_logits(uphw(final, size=size), sal_cues)
+                loss_dict.update({"bceloss": bceloss.item()})
+                loss += auxloss + bceloss
+            else:
+                lwtloss = self.lwtLoss(final, img=x)
+                loss_dict.update({"lwtloss": lwtloss.item()})
+                loss += lwtloss
 
             loss_dict.update({"totloss": loss.item()})
             if "sw" in kwargs:
@@ -77,7 +77,7 @@ class R50FrcPN(nn.Module):
 
         return {
             "loss": loss,
-            "pred": torch.sigmoid(uphw(preds[0], size=x.shape[2::])),
+            "pred": torch.sigmoid(uphw(preds[0], size=x.shape[2::])) if not test_attn else minMaxNorm(attn.detach()),
             "attn": sal_cues if has_sal_cues else minMaxNorm(attn.detach()),
             "loss_dict": loss_dict
         }
