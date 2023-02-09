@@ -75,12 +75,12 @@ def train(cfg):
             }, global_step=global_step)
 
             ## avg
-            loss_avg.update(loss.item())
-            cl_avg.update(out["loss_dict"]["cl"])
-            bce_avg.update(out["loss_dict"]["bce"])
-            lwt_avg.update(out["loss_dict"]["lwt"])
-            sal_avg.update(out["sal"].mean().item())
-            pred_avg.update(out["pred"].mean().item())
+            loss_avg.update(float(loss))
+            cl_avg.update(float(out["loss_dict"]["cl"]))
+            bce_avg.update(float(out["loss_dict"]["bce"]))
+            lwt_avg.update(float(out["loss_dict"]["lwt"]))
+            sal_avg.update(float(out["sal"].mean()))
+            pred_avg.update(float(out["pred"].mean()))
             mask_avg.update(mask.gt(0.5).float().mean())
             cur_lr = optimizer.param_groups[0]['lr']
 
