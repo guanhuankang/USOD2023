@@ -52,19 +52,25 @@ class R50FrcPN(nn.Module):
         if self.training:
             size = preds[0].shape[2::]
             ep_step = 1.0 / kwargs["epoches"]
-            alpha_bce = delayWarmUp(step=global_step, period=ep_step * 17, delay=ep_step * 3)
-            alpha_other = delayWarmUp(step=global_step, period=ep_step * 100, delay=ep_step * 20)
+            silent = global_step < (5 * ep_step)
+            # alpha_bce = delayWarmUp(step=global_step, period=ep_step * 20, delay=ep_step * 5)
+            # alpha_other = delayWarmUp(step=global_step, period=ep_step * 100, delay=ep_step * 1)
             loss_dict = {"clloss": loss.item()}
 
-            if alpha_bce<0.999:
-                sal_cues = self.crf(uphw(minMaxNorm(x), size=size), minMaxNorm(uphw(attn.detach(), size=size)),
-                                    iters=10).gt(0.5).float()  ## stop gradient
-            if alpha_bce>1e-3 and alpha_bce<0.999:
-                bceloss = sum([F.binary_cross_entropy_with_logits(uphw(y, size=size), sal_cues) for y in preds]); loss_dict.update({"bce_loss": bceloss.item()})
-                loss += bceloss
-            if alpha_other>1e-3:
-                lwtloss = self.lwtLoss(preds[0], img=x); loss_dict.update({"lwtLoss": lwtloss.item()})
-                loss += lwtloss
+            sal_cues = self.crf(uphw(minMaxNorm(x), size=size), minMaxNorm(uphw(attn.detach(), size=size)),
+                                iters=10).gt(0.5).float()  ## stop gradient
+            if not silent:
+                final = preds[0]
+                auxloss = sum([F.binary_cross_entropy_with_logits(uphw(y, size=size), sal_cues) for y in preds[1::]])
+
+                bceloss = F.binary_cross_entropy_with_logits(uphw(final, size=size), sal_cues)
+                loss_dict.update({"bce_loss": bceloss.item()})
+
+                lwtloss = self.lwtLoss(final, img=x)
+                loss_dict.update({"lwtLoss": lwtloss.item()})
+
+                alpha = float(min(torch.abs(torch.sigmoid(final).mean() - sal_cues.mean()) / (sal_cues.mean() + 1e-6), 1.0)) ## 0.0~1.0
+                loss += alpha * bceloss + (1.0-alpha) * lwtloss + auxloss
 
             loss_dict.update({"tot_loss": loss.item()})
             if "sw" in kwargs:
@@ -72,6 +78,6 @@ class R50FrcPN(nn.Module):
 
         return {
             "loss": loss,
-            "pred": uphw(sal_cues, size=x.shape[2::]) if (self.training and alpha_bce<1e-3) else torch.sigmoid(uphw(preds[0], size=x.shape[2::])),
+            "pred": uphw(sal_cues, size=x.shape[2::]) if (self.training and silent) else torch.sigmoid(uphw(preds[0], size=x.shape[2::])),
             "attn": attn
         }
