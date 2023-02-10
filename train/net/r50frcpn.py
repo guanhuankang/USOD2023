@@ -52,7 +52,7 @@ class R50FrcPN(nn.Module):
         y = self.crf(uphw(img, size=size), minMaxNorm(uphw(y.detach(), size=size)), iters=10).gt(0.5).float()
         return F.binary_cross_entropy_with_logits(p, y), float(y.mean())
 
-    def forward(self, x, **kwargs):
+    def forward(self, x, epoch=1000, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
         attn, cl_loss = self.sal(self.conv(f5))
         p0, p1, p2, p3, p4, p5 = self.decoder([f1, f2, f3, f4, f5])
@@ -83,9 +83,10 @@ class R50FrcPN(nn.Module):
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", loss_dict, global_step=kwargs["global_step"])
 
+        final = p0 if epoch>1 else p4
         return {
             "loss": loss if self.training else 0.0,
-            "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])),
+            "pred": torch.sigmoid(uphw(final, size=x.shape[2::])),
             "attn": attn,
             "sal": s4 if self.training else 0.0,
             "loss_dict": loss_dict if self.training else {}
