@@ -60,13 +60,14 @@ class R50FrcPN(nn.Module):
         if self.training:
             sal = minMaxNorm(attn.detach())
             img = minMaxNorm(x)
-            m0, m1, m2, m3, m4, m5 = torch.sigmoid(p0), torch.sigmoid(p1), torch.sigmoid(p2), torch.sigmoid(p3),\
-                                     torch.sigmoid(p4), torch.sigmoid(p5)
+            # m0, m1, m2, m3, m4, m5 = torch.sigmoid(p0), torch.sigmoid(p1), torch.sigmoid(p2), torch.sigmoid(p3),\
+            #                          torch.sigmoid(p4), torch.sigmoid(p5)
 
-            bce_loss_4, s4 = self.crfCELoss(p4, sal, img)
-            bce_loss_1, s1 = self.crfCELoss(p1, m4, img) if epoch>1 else (0.0, 0.0)
-            bce_loss_0, s0 = self.crfCELoss(p0, m4, img) if epoch>1 else (0.0, 0.0)
-            bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_4
+            bce_loss_0, s0 = self.crfCELoss(p0, sal, img)
+            bce_loss_1, s1 = self.crfCELoss(p1, sal, img)
+            bce_loss_2, s2 = self.crfCELoss(p2, sal, img)
+            bce_loss_3, s3 = self.crfCELoss(p3, sal, img)
+            bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_2 + bce_loss_3
             lwt_loss = self.lwtLoss(p0, img) if epoch>10 else 0.0
             loss = cl_loss + bce_loss + lwt_loss
 
@@ -74,7 +75,8 @@ class R50FrcPN(nn.Module):
                 "cl": float(cl_loss),
                 "bce0": float(bce_loss_0),
                 "bce1": float(bce_loss_1),
-                "bce4": float(bce_loss_4),
+                "bce2": float(bce_loss_2),
+                "bce3": float(bce_loss_3),
                 "bce": float(bce_loss),
                 "lwt": float(lwt_loss),
                 "tot": float(loss)
@@ -82,11 +84,10 @@ class R50FrcPN(nn.Module):
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", loss_dict, global_step=kwargs["global_step"])
 
-        final = p0 if epoch>1 else p4
         return {
             "loss": loss if self.training else 0.0,
-            "pred": torch.sigmoid(uphw(final, size=x.shape[2::])),
+            "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])),
             "attn": attn,
-            "sal": s4 if self.training else 0.0,
+            "sal": s0 if self.training else 0.0,
             "loss_dict": loss_dict if self.training else {}
         }
