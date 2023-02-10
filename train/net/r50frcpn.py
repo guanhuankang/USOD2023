@@ -61,23 +61,16 @@ class R50FrcPN(nn.Module):
         if self.training:
             sal = minMaxNorm(attn.detach())
             img = minMaxNorm(x)
-            factor = 10.0
-            m0, m1, m2, m3 = torch.sigmoid(p0 * factor), torch.sigmoid(p1 * factor), torch.sigmoid(p2 * factor), torch.sigmoid(p3 * factor)
 
             bce_loss_0, s0 = self.crfCELoss(p0, sal, img) if epoch<=1 else (0.0, 0.0)
             bce_loss_1, s1 = self.crfCELoss(p1, sal, img)
-            # bce_loss_2, s2 = self.crfCELoss(p2, sal, img)
-            # bce_loss_3, s3 = self.crfCELoss(p3, sal, img)
             bce_loss = bce_loss_0 + bce_loss_1
 
             lwt_loss = self.lwtLoss(p0, img) if epoch>1 else 0.0
 
-            amo = sal.mean() * 0.8
-            amo_loss = torch.abs(m0.mean() - amo) + torch.abs(m1.mean() - amo) + torch.abs(m2.mean() - amo)
-            info = float(torch.abs(m2.mean() - amo))
+            loss = cl_loss + bce_loss + lwt_loss
 
-            loss = cl_loss + bce_loss + lwt_loss + amo_loss
-
+            info = str(torch.sigmoid(bce_loss_0).mean())
             loss_dict = {
                 "cl": float(cl_loss),
                 "bce0": float(bce_loss_0),
@@ -95,7 +88,7 @@ class R50FrcPN(nn.Module):
             "loss": loss if self.training else 0.0,
             "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])),
             "attn": attn,
-            "sal": s0 if self.training else 0.0,
+            "sal": s1 if self.training else 0.0,
             "loss_dict": loss_dict if self.training else {},
             "info": str(info)
         }
