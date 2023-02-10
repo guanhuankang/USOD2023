@@ -50,7 +50,7 @@ class R50FrcPN(nn.Module):
     def crfCELoss(self, p, y, img):
         size = p.shape[2::]
         y = self.crf(uphw(img, size=size), minMaxNorm(uphw(y.detach(), size=size)), iters=10).gt(0.5).float()
-        return F.binary_cross_entropy_with_logits(p, y)
+        return F.binary_cross_entropy_with_logits(p, y), float(y.mean())
 
     def forward(self, x, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
@@ -64,24 +64,18 @@ class R50FrcPN(nn.Module):
             m0, m1, m2, m3, m4, m5 = torch.sigmoid(p0), torch.sigmoid(p1), torch.sigmoid(p2), torch.sigmoid(p3),\
                                      torch.sigmoid(p4), torch.sigmoid(p5)
 
-            bce_loss_4 = self.crfCELoss(p4, sal, img) if (epoch>=6 and epoch<=10) else (self.crfCELoss(p4, m5, img) if epoch>10 else 0.0)
-            bce_loss_3 = self.crfCELoss(p3, m4, img) if epoch >= 7 else 0.0
-            bce_loss_2 = self.crfCELoss(p2, m3, img) if epoch >= 8 else 0.0
-            bce_loss_1 = self.crfCELoss(p1, m2, img) if epoch >= 9 else 0.0
-            bce_loss_0 = self.crfCELoss(p0, m2, img) if epoch >= 9 else 0.0
-            bce_loss_5 = self.CELoss(p5, p1) if epoch>=10 else 0.0
-            bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_2 + bce_loss_3 + bce_loss_4 + bce_loss_5
+            bce_loss_4, s4 = self.crfCELoss(p4, sal, img)
+            bce_loss_1, s1 = self.crfCELoss(p1, m2, img) if epoch>1 else (0.0, 0.0)
+            bce_loss_0, s0 = self.crfCELoss(p0, m2, img) if epoch>1 else (0.0, 0.0)
+            bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_4 * 5.0
             lwt_loss = self.lwtLoss(p0, img) if epoch>10 else 0.0
-            loss = cl_loss + bce_loss + lwt_loss
+            loss = cl_loss * 10.0 + bce_loss + lwt_loss
 
             loss_dict = {
                 "cl": float(cl_loss),
                 "bce0": float(bce_loss_0),
                 "bce1": float(bce_loss_1),
-                "bce2": float(bce_loss_2),
-                "bce3": float(bce_loss_3),
                 "bce4": float(bce_loss_4),
-                "bce5": float(bce_loss_5),
                 "bce": float(bce_loss),
                 "lwt": float(lwt_loss),
                 "tot": float(loss)

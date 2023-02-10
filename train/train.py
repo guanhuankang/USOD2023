@@ -30,6 +30,10 @@ def train(cfg):
     net    = Network(cfg)
     net.train(True)
     net.cuda()
+    ## load snapshot
+    if cfg.snapshot!="":
+        print("load snapshot", cfg.snapshot)
+        net.load_state_dict(torch.load(cfg.snapshot))
     ## optimizer & logger
     optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=cfg.T_0, eta_min=cfg.eta_min)
@@ -46,6 +50,7 @@ def train(cfg):
     loss_avg = Avg()
     bce_avg = Avg()
     p0_avg = Avg()
+    p4_avg = Avg()
     lwt_avg = Avg()
     cl_avg = Avg()
     sal_avg = Avg()
@@ -81,6 +86,7 @@ def train(cfg):
             bce_avg.update(float(out["loss_dict"]["bce"]))
             lwt_avg.update(float(out["loss_dict"]["lwt"]))
             p0_avg.update(float(out["loss_dict"]["bce0"]))
+            p4_avg.update(float(out["loss_dict"]["bce4"]))
             sal_avg.update(float(out["sal"].mean()))
             pred_avg.update(float(out["pred"].mean()))
             mask_avg.update(mask.gt(0.5).float().mean())
@@ -90,11 +96,11 @@ def train(cfg):
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
                 s = ('epoch:{}/{} | {:1.2f}% | ' + \
-                    'lr={:1.5f} | loss={:1.3f} [cl={:1.3f} bce={:1.3f} lwt={:1.3f} p0_bce={:1.3f}] | ' + \
+                    'lr={:1.5f} | loss={:1.3f} [cl={:1.3f} bce={:1.3f} lwt={:1.3f} p0={:1.3f} p4={:1.3f}] | ' + \
                     'elase={:1.2f}min | remain={:1.2f}min | ' + \
                     'sal={:1.3f} | pred={:1.3f} | mask={:1.3f} $').format(
                     epoch, cfg.epoch, global_step/tot_iter*100.0,
-                    cur_lr, loss_avg(), cl_avg(), bce_avg(), lwt_avg(), p0_avg(),
+                    cur_lr, loss_avg(), cl_avg(), bce_avg(), lwt_avg(), p0_avg(), p4_avg(),
                     elase / 60, remain / 60,
                     sal_avg(), pred_avg(), mask_avg()
                 )

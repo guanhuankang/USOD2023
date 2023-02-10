@@ -1,6 +1,6 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
-  "snapShot": "",
+  "snapShot": "pretrained/model-5-other.pth",
   "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
