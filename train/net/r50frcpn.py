@@ -71,7 +71,7 @@ class R50FrcPN(nn.Module):
 
             lwt_loss = self.lwtLoss(p0, img) if epoch>1 else 0.0
 
-            amo = 0.27
+            amo = sal.mean() * 0.8
             amo_loss = torch.abs(m0.mean() - amo) + torch.abs(m1.mean() - amo) + torch.abs(m2.mean() - amo) + torch.abs(m3.mean() - amo)
 
             loss = cl_loss + bce_loss + lwt_loss + amo_loss
