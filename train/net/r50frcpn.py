@@ -83,10 +83,9 @@ class R50FrcPN(nn.Module):
             if "sw" in kwargs:
                 kwargs["sw"].add_scalars("loss", loss_dict, global_step=kwargs["global_step"])
 
-        test_attn = self.training and epoch<=5
         return {
             "loss": loss if self.training else 0.0,
-            "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])) if (not test_attn) else sal,
+            "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])),
             "attn": attn,
             "sal": s4 if self.training else 0.0,
             "loss_dict": loss_dict if self.training else {}
