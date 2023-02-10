@@ -88,6 +88,6 @@ class R50FrcPN(nn.Module):
             "loss": loss if self.training else 0.0,
             "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])) if (not test_attn) else sal,
             "attn": attn,
-            "sal": sal if self.training else attn,
+            "sal": s4 if self.training else 0.0,
             "loss_dict": loss_dict if self.training else {}
         }

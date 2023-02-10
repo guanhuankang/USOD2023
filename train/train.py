@@ -87,7 +87,7 @@ def train(cfg):
             lwt_avg.update(float(out["loss_dict"]["lwt"]))
             p0_avg.update(float(out["loss_dict"]["bce0"]))
             p4_avg.update(float(out["loss_dict"]["bce4"]))
-            sal_avg.update(float(out["sal"].mean()))
+            sal_avg.update(float(out["sal"]))
             pred_avg.update(float(out["pred"].mean()))
             mask_avg.update(mask.gt(0.5).float().mean())
             cur_lr = optimizer.param_groups[0]['lr']
