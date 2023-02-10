@@ -64,8 +64,8 @@ class R50FrcPN(nn.Module):
                                      torch.sigmoid(p4), torch.sigmoid(p5)
 
             bce_loss_4, s4 = self.crfCELoss(p4, sal, img)
-            bce_loss_1, s1 = self.crfCELoss(p1, m2, img) if epoch>1 else (0.0, 0.0)
-            bce_loss_0, s0 = self.crfCELoss(p0, m2, img) if epoch>1 else (0.0, 0.0)
+            bce_loss_1, s1 = self.crfCELoss(p1, m4, img) if epoch>1 else (0.0, 0.0)
+            bce_loss_0, s0 = self.crfCELoss(p0, m4, img) if epoch>1 else (0.0, 0.0)
             bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_4
             lwt_loss = self.lwtLoss(p0, img) if epoch>10 else 0.0
             loss = cl_loss + bce_loss + lwt_loss
