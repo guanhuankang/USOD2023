@@ -1,7 +1,8 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
-  "snapShot": "pretrained/model-5-other.pth",
+  "snapShot": "",
   "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
+  "salPath": "",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
@@ -14,7 +15,7 @@
   "size": [352,352],
   "batchSize": 8,
   "lr": 0.01,
-  "T_0": 2,
+  "T_0": 20,
   "eta_min": 1e-3,
   "epoch": 80,
   "epoch_lr_delay": 80,

@@ -44,29 +44,27 @@ class R50FrcPN(nn.Module):
         return lwtloss + consloss + uncerloss
 
     def CELoss(self, p, y):
-        y = uphw(y.detach(), size=p.shape[2::])
+        p = F.interpolate(p, size=y.shape[2::], mode="bilinear")
         return F.binary_cross_entropy_with_logits(p, y.gt(0.5).float())
 
-    def crfCELoss(self, p, y, img):
-        size = p.shape[2::]
-        y = self.crf(uphw(img, size=size), minMaxNorm(uphw(y.detach(), size=size)), iters=10).gt(0.5).float()
-        return F.binary_cross_entropy_with_logits(p, y), float(y.mean())
-
     def forward(self, x, epoch=1000, **kwargs):
-        info = ""
         f1, f2, f3, f4, f5 = self.backbone(x)
         attn, cl_loss = self.sal(self.conv(f5))
         p0, p1, p2, p3, p4, p5 = self.decoder([f1, f2, f3, f4, f5])
 
         if self.training:
-            sal = minMaxNorm(attn.detach())
+            size = p0.shape[2::]
             img = minMaxNorm(x)
+            sal = self.crf(uphw(img, size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=10).gt(0.5).float()
 
-            bce_loss_0, s0 = self.crfCELoss(p0, sal, img) if epoch<=1 else (0.0, 0.0)
-            bce_loss_1, s1 = self.crfCELoss(p1, sal, img)
-            bce_loss = bce_loss_0 + bce_loss_1
+            bce_loss_0 = self.CELoss(p0, sal) if (epoch>5 and epoch<=10) else 0.0
+            bce_loss_1 = self.CELoss(p1, sal) if epoch>5 else 0.0
+            bce_loss_2 = self.CELoss(p2, sal) if epoch>5 else 0.0
+            bce_loss_3 = self.CELoss(p3, sal) if epoch>5 else 0.0
+            bce_loss_4 = self.CELoss(p4, sal) if epoch>5 else 0.0
+            bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_2 + bce_loss_3 + bce_loss_4
 
-            lwt_loss = self.lwtLoss(p0, img) if epoch>1 else 0.0
+            lwt_loss = self.lwtLoss(p0, img) if epoch>10 else 0.0
 
             loss = cl_loss + bce_loss + lwt_loss
 
@@ -74,8 +72,9 @@ class R50FrcPN(nn.Module):
                 "cl": float(cl_loss),
                 "bce0": float(bce_loss_0),
                 "bce1": float(bce_loss_1),
-                # "bce2": float(bce_loss_2),
-                # "bce3": float(bce_loss_3),
+                "bce2": float(bce_loss_2),
+                "bce3": float(bce_loss_3),
+                "bce4": float(bce_loss_4),
                 "bce": float(bce_loss),
                 "lwt": float(lwt_loss),
                 "tot": float(loss)
@@ -87,7 +86,6 @@ class R50FrcPN(nn.Module):
             "loss": loss if self.training else 0.0,
             "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])),
             "attn": attn,
-            "sal": s1 if self.training else 0.0,
-            "loss_dict": loss_dict if self.training else {},
-            "info": str(info)
+            "sal": float(sal.mean()) if self.training else 0.0,
+            "loss_dict": loss_dict if self.training else {}
         }

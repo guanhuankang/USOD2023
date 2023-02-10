@@ -1,6 +1,6 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_work.json",
-  "snapShot": "pretrained/model-5-other.pth",
+  "snapShot": "",
   "backboneWeight": "D:/2023ICCVUSOD/dataset/PretrainModel/dino_resnet50_pretrain.pth",
   "salPath": "",
   "evalPath": "results/",
@@ -15,7 +15,7 @@
   "size": [352,352],
   "batchSize": 4,
   "lr": 0.01,
-  "T_0": 2,
+  "T_0": 20,
   "eta_min": 1e-3,
   "epoch": 80,
   "epoch_lr_delay": 80,
