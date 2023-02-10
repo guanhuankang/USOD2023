@@ -31,9 +31,9 @@ def train(cfg):
     net.train(True)
     net.cuda()
     ## load snapshot
-    if cfg.snapshot!="":
-        print("load snapshot", cfg.snapshot)
-        net.load_state_dict(torch.load(cfg.snapshot))
+    if cfg.snapShot!="":
+        print("load snapshot", cfg.snapShot)
+        net.load_state_dict(torch.load(cfg.snapShot))
     ## optimizer & logger
     optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=0.9, weight_decay=5e-4)
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=cfg.T_0, eta_min=cfg.eta_min)
