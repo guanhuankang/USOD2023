@@ -1,6 +1,6 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_work.json",
-  "snapShot": "",
+  "snapShot": "pretrained/model-5-other.pth",
   "backboneWeight": "D:/2023ICCVUSOD/dataset/PretrainModel/dino_resnet50_pretrain.pth",
   "salPath": "",
   "evalPath": "results/",

@@ -70,7 +70,7 @@ class R50FrcPN(nn.Module):
 
             loss = cl_loss + bce_loss + lwt_loss
 
-            info = str(torch.sigmoid(bce_loss_0).mean())
+            info = str(float(torch.sigmoid(bce_loss_0).mean()))[0:2]
             loss_dict = {
                 "cl": float(cl_loss),
                 "bce0": float(bce_loss_0),
