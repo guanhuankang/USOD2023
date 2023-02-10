@@ -33,7 +33,7 @@ class R50FrcPN(nn.Module):
         weight_init(self.conv)
 
         self.crf = CRF()
-        self.lwt = LocalWindowTripleLoss(kernel_size=21)
+        self.lwt = LocalWindowTripleLoss(kernel_size=11)
 
     def lwtLoss(self, p, img):
         N = len(p) // 2
@@ -53,6 +53,7 @@ class R50FrcPN(nn.Module):
         return F.binary_cross_entropy_with_logits(p, y), float(y.mean())
 
     def forward(self, x, epoch=1000, **kwargs):
+        info = ""
         f1, f2, f3, f4, f5 = self.backbone(x)
         attn, cl_loss = self.sal(self.conv(f5))
         p0, p1, p2, p3, p4, p5 = self.decoder([f1, f2, f3, f4, f5])
@@ -63,16 +64,17 @@ class R50FrcPN(nn.Module):
             factor = 10.0
             m0, m1, m2, m3 = torch.sigmoid(p0 * factor), torch.sigmoid(p1 * factor), torch.sigmoid(p2 * factor), torch.sigmoid(p3 * factor)
 
-            bce_loss_0, s0 = self.crfCELoss(p0, sal, img) if epoch<=1 else 0.0
+            bce_loss_0, s0 = self.crfCELoss(p0, sal, img) if epoch<=1 else (0.0, 0.0)
             bce_loss_1, s1 = self.crfCELoss(p1, sal, img)
-            bce_loss_2, s2 = self.crfCELoss(p2, sal, img)
-            bce_loss_3, s3 = self.crfCELoss(p3, sal, img)
-            bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_2 + bce_loss_3
+            # bce_loss_2, s2 = self.crfCELoss(p2, sal, img)
+            # bce_loss_3, s3 = self.crfCELoss(p3, sal, img)
+            bce_loss = bce_loss_0 + bce_loss_1
 
             lwt_loss = self.lwtLoss(p0, img) if epoch>1 else 0.0
 
             amo = sal.mean() * 0.8
-            amo_loss = torch.abs(m0.mean() - amo) + torch.abs(m1.mean() - amo) + torch.abs(m2.mean() - amo) + torch.abs(m3.mean() - amo)
+            amo_loss = torch.abs(m0.mean() - amo) + torch.abs(m1.mean() - amo) + torch.abs(m2.mean() - amo)
+            info = float(torch.abs(m2.mean() - amo))
 
             loss = cl_loss + bce_loss + lwt_loss + amo_loss
 
@@ -80,8 +82,8 @@ class R50FrcPN(nn.Module):
                 "cl": float(cl_loss),
                 "bce0": float(bce_loss_0),
                 "bce1": float(bce_loss_1),
-                "bce2": float(bce_loss_2),
-                "bce3": float(bce_loss_3),
+                # "bce2": float(bce_loss_2),
+                # "bce3": float(bce_loss_3),
                 "bce": float(bce_loss),
                 "lwt": float(lwt_loss),
                 "tot": float(loss)
@@ -94,5 +96,6 @@ class R50FrcPN(nn.Module):
             "pred": torch.sigmoid(uphw(p0, size=x.shape[2::])),
             "attn": attn,
             "sal": s0 if self.training else 0.0,
-            "loss_dict": loss_dict if self.training else {}
+            "loss_dict": loss_dict if self.training else {},
+            "info": str(info)
         }
