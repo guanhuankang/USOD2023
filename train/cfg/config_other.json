@@ -13,7 +13,7 @@
   "crf": false,
 
   "size": [352,352],
-  "batchSize": 8,
+  "batchSize": 10,
   "lr": 0.01,
   "T_0": 20,
   "eta_min": 1e-3,
