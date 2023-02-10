@@ -60,7 +60,6 @@ class R50FrcPN(nn.Module):
         if self.training:
             sal = minMaxNorm(attn.detach())
             img = minMaxNorm(x)
-            epoch = kwargs["epoch"]
             m0, m1, m2, m3, m4, m5 = torch.sigmoid(p0), torch.sigmoid(p1), torch.sigmoid(p2), torch.sigmoid(p3),\
                                      torch.sigmoid(p4), torch.sigmoid(p5)
 
