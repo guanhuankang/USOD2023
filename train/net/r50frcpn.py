@@ -60,16 +60,21 @@ class R50FrcPN(nn.Module):
         if self.training:
             sal = minMaxNorm(attn.detach())
             img = minMaxNorm(x)
-            # m0, m1, m2, m3, m4, m5 = torch.sigmoid(p0), torch.sigmoid(p1), torch.sigmoid(p2), torch.sigmoid(p3),\
-            #                          torch.sigmoid(p4), torch.sigmoid(p5)
+            factor = 10.0
+            m0, m1, m2, m3 = torch.sigmoid(p0 * factor), torch.sigmoid(p1 * factor), torch.sigmoid(p2 * factor), torch.sigmoid(p3 * factor)
 
-            bce_loss_0, s0 = self.crfCELoss(p0, sal, img)
+            bce_loss_0, s0 = self.crfCELoss(p0, sal, img) if epoch<=1 else 0.0
             bce_loss_1, s1 = self.crfCELoss(p1, sal, img)
             bce_loss_2, s2 = self.crfCELoss(p2, sal, img)
             bce_loss_3, s3 = self.crfCELoss(p3, sal, img)
             bce_loss = bce_loss_0 + bce_loss_1 + bce_loss_2 + bce_loss_3
-            lwt_loss = self.lwtLoss(p0, img) if epoch>10 else 0.0
-            loss = cl_loss + bce_loss + lwt_loss
+
+            lwt_loss = self.lwtLoss(p0, img) if epoch>1 else 0.0
+
+            amo = 0.27
+            amo_loss = torch.abs(m0.mean() - amo) + torch.abs(m1.mean() - amo) + torch.abs(m2.mean() - amo) + torch.abs(m3.mean() - amo)
+
+            loss = cl_loss + bce_loss + lwt_loss + amo_loss
 
             loss_dict = {
                 "cl": float(cl_loss),
