@@ -50,7 +50,7 @@ def train(cfg):
     loss_avg = Avg()
     bce_avg = Avg()
     p0_avg = Avg()
-    p4_avg = Avg()
+    p1_avg = Avg()
     lwt_avg = Avg()
     cl_avg = Avg()
     sal_avg = Avg()
@@ -86,7 +86,7 @@ def train(cfg):
             bce_avg.update(float(out["loss_dict"]["bce"]))
             lwt_avg.update(float(out["loss_dict"]["lwt"]))
             p0_avg.update(float(out["loss_dict"]["bce0"]))
-            p4_avg.update(float(out["loss_dict"]["bce4"]))
+            p1_avg.update(float(out["loss_dict"]["bce1"]))
             sal_avg.update(float(out["sal"]))
             pred_avg.update(float(out["pred"].mean()))
             mask_avg.update(mask.gt(0.5).float().mean())
@@ -100,7 +100,7 @@ def train(cfg):
                     'elase={:1.2f}min | remain={:1.2f}min | ' + \
                     'sal={:1.3f} | pred={:1.3f} | mask={:1.3f} $').format(
                     epoch, cfg.epoch, global_step/tot_iter*100.0,
-                    cur_lr, loss_avg(), cl_avg(), bce_avg(), lwt_avg(), p0_avg(), p4_avg(),
+                    cur_lr, loss_avg(), cl_avg(), bce_avg(), lwt_avg(), p0_avg(), p1_avg(),
                     elase / 60, remain / 60,
                     sal_avg(), pred_avg(), mask_avg()
                 )
