@@ -1,6 +1,6 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_burgundy.json",
-  "snapShot": "pretrained/model-cl.pth",
+  "snapShot": "",
   "backboneWeight": "/home/huankguan2/scratch/usod/dino_resnet50_pretrain.pth",
   "salPath": "",
   "evalPath": "results/",
