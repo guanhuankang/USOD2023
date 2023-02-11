@@ -1,7 +1,7 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
   "snapShot": "",
-  "backboneWeight": "/home/ryn02/hkguan/dataset/resnext_101_32x4d.pth",
+  "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
   "salPath": "",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
