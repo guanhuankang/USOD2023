@@ -66,11 +66,11 @@ class ContrastiveSaliency(nn.Module):
             prob = torch.diagonal(similarity, batch // 2, dim1=-2, dim2=-1)  ## nq, batch//2
             cl_loss = -torch.log(prob + 1e-6).mean()
 
-            attn_sim_mse = nn.L1Loss()(attn[0:batch//2], attn[batch//2::]).mean()
+            # attn_sim_mse = nn.L1Loss()(attn[0:batch//2], attn[batch//2::]).mean()
             # l1loss = (0.5 - torch.abs(attn-0.5)).mean()
-            # amoloss = torch.abs(attn.mean()-0.30)
+            amoloss = torch.abs(attn.mean()-0.30)
 
-            loss = cl_loss + attn_sim_mse
+            loss = cl_loss
             return attn, loss
         else:
             return attn, torch.zeros_like(attn).sum()
