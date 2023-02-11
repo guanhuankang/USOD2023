@@ -78,6 +78,6 @@ class R50FrcPN(nn.Module):
             "attn": minMaxNorm(uphw(attn, size=x.shape[2::])),
 
             "loss": loss if self.training else 0.0,
-            "sal": float(sal.mean()) if self.training else 0.0,
+            "sal": float(attn.mean()) if self.training else 0.0,
             "loss_dict": loss_dict if self.training else {}
         }
