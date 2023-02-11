@@ -1,6 +1,6 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
-  "snapShot": "",
+  "snapShot": "pretrained/model-cl.pth",
   "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
   "salPath": "",
   "evalPath": "results/",
@@ -14,8 +14,8 @@
 
   "size": [352,352],
   "batchSize": 10,
-  "lr": 0.01,
-  "T_0": 20,
+  "lr": 0.001,
+  "T_0": 80,
   "eta_min": 1e-3,
   "epoch": 80,
   "epoch_lr_delay": 80,

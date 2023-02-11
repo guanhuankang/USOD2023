@@ -1,6 +1,6 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_burgundy.json",
-  "snapShot": "",
+  "snapShot": "pretrained/model-cl.pth",
   "backboneWeight": "/home/huankguan2/scratch/usod/dino_resnet50_pretrain.pth",
   "salPath": "",
   "evalPath": "results/",
@@ -15,7 +15,7 @@
   "size": [352,352],
   "batchSize": 16,
   "lr": 0.001,
-  "T_0": 20,
+  "T_0": 80,
   "eta_min": 1e-3,
   "epoch": 80,
   "epoch_lr_delay": 80,
