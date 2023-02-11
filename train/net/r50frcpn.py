@@ -55,19 +55,16 @@ class R50FrcPN(nn.Module):
         if self.training:
             size = p0.shape[2::]
             img = minMaxNorm(x)
-            sal = self.crf(uphw(img, size=size), minMaxNorm(uphw(attn.detach(), size=size)), iters=10).gt(0.5).float()
+            sal = self.crf(uphw(img, size=size), uphw(attn.detach(), size=size), iters=1).gt(0.5).float()
 
-            n_ep = 10
-            # bce_loss_0 = self.CELoss(p0, sal) if (epoch>5 and epoch<=10) else 0.0
-            bce_loss_1 = self.CELoss(p1, sal) if epoch<=n_ep else 0.0
-            bce_loss_2 = self.CELoss(p2, sal) if epoch<=n_ep else 0.0
-            bce_loss_3 = self.CELoss(p3, sal) if epoch<=n_ep else 0.0
-            bce_loss_4 = self.CELoss(p4, sal) if epoch<=n_ep else 0.0
+            n_ep = 5
+            bce_loss_1 = self.CELoss(p1, sal) if (epoch>n_ep and epoch<=(n_ep+n_ep)) else (self.lwtLoss(p1, img) if epoch>(n_ep+n_ep) else 0.0)
+            bce_loss_2 = self.CELoss(p2, sal) if epoch>n_ep else 0.0
+            bce_loss_3 = self.CELoss(p3, sal) if epoch>n_ep else 0.0
+            bce_loss_4 = self.CELoss(p4, sal) if epoch>n_ep else 0.0
             bce_loss = bce_loss_1 + bce_loss_2 + bce_loss_3 + bce_loss_4
 
-            lwt_loss = self.lwtLoss(p1, img) if epoch>n_ep else 0.0
-
-            loss = cl_loss + bce_loss + lwt_loss
+            loss = cl_loss + bce_loss
 
             loss_dict = {
                 "cl": float(cl_loss),
@@ -77,7 +74,7 @@ class R50FrcPN(nn.Module):
                 "bce3": float(bce_loss_3),
                 "bce4": float(bce_loss_4),
                 "bce": float(bce_loss),
-                "lwt": float(lwt_loss),
+                "lwt": float(0.0),
                 "tot": float(loss)
             }
             if "sw" in kwargs:
