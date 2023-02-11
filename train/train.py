@@ -3,7 +3,7 @@
 
 import datetime
 import time, os
-
+from progress.bar import Bar
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
@@ -31,7 +31,7 @@ def train(cfg):
     net.cuda()
     ## optimizer & logger
     optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=cfg.momentum, weight_decay=cfg.weightDecay)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay, gamma=0.1)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
     global_step = 0
@@ -44,11 +44,12 @@ def train(cfg):
     for epoch in range(cfg.epoch):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
+        bar = Bar(max=len(loader))
         net.train(True)
         for step, (image, mask) in enumerate(loader):
             optimizer.zero_grad()
             image, mask = image.cuda().float(), mask.cuda().float()
-            out = net(image, global_step=global_step/tot_iter, sw=sw, epoches=cfg.epoch)
+            out = net(image, global_step=global_step/tot_iter, sw=sw, epoches=cfg.epoch, epoch=epoch+1, mask=mask)
             loss = out["loss"]
 
             loss.backward()
@@ -62,10 +63,13 @@ def train(cfg):
             if step%10 == 0:
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
-                print('%s | %.2f%% | step:%d/%d/%d | lr=%.6f | loss=%.6f | elase=%.1fmin | remain=%.1fmin'
-                    %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
-                      elase / 60, remain / 60), flush=True
+                s = '{:.2f}% | step:{}/{} | lr={:1.5f} | loss={:1.6f} | elase={:1.1f}min | remain={:1.1f}min #'.format(
+                    global_step/tot_iter*100.0, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
+                    elase / 60, remain / 60
                 )
+                bar.bar_prefix = s
+            bar.next()
+
         ## epoch end/ start epoch test
         scheduler.step()
         if epoch>=0:

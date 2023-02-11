@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sys
 
-from net.r50frcpn import R50FrcPN
+from net.detector import R50FrcPN
 
 class Network(nn.Module):
     def __init__(self, cfg):
