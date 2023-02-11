@@ -54,6 +54,8 @@ class ContrastiveSaliency(nn.Module):
         self.g = PositionwiseFeedForward(d_model, d_ff)
         weight_init(self.g)
 
+        self.queue = []
+
     def forward(self, x, tau=0.1):
         batch, d_model, h, w = x.shape
         # m = torch.softmax(self.qs(x).flatten(-2,-1), dim=-1).permute(2,0,1) ## hw,b,1
@@ -63,21 +65,26 @@ class ContrastiveSaliency(nn.Module):
         else:
             x = self.transform(x)
             mem = torch.flatten(x, -2, -1).permute(2, 0, 1)  ## hw,b,d
+
         # q = torch.sum(m * mem, dim=0, keepdim=True) ## 1,b,d
         q = torch.mean(mem, dim=0, keepdim=True) ## 1,b,d
         out, attn = self.multi_head(q, mem, mem) ## 1,b,d; b,1,hw
         attn = attn.reshape(batch, -1, h, w)
 
+        out = torch.cat(self.queue+[out], dim=1) ## 1,b*x,d
+        self.queue.append(out.detach())
+        if len(self.queue)>5: self.queue.pop(0)
+
         if self.training:
             y = F.normalize(self.g(out), p=2, dim=-1)  ## nq,batch,d_model
             cos_sim = torch.matmul(y, y.transpose(-1,-2))  ## nq,batch,batch
-            cos_sim = cos_sim - 1e9 * torch.eye(batch, device=cos_sim.device)
+            cos_sim = cos_sim - 1e9 * torch.eye(y.shape[1], device=cos_sim.device)
             similarity = torch.softmax(cos_sim / tau, dim=-1)  ## nq, batch, batch
-            prob = torch.diagonal(similarity, batch // 2, dim1=-2, dim2=-1)  ## nq, batch//2
+            prob = torch.diagonal(similarity, similarity.shape[1]//2, dim1=-2, dim2=-1)  ## nq, batch//2
             cl_loss = -torch.log(prob + 1e-6).mean()
 
-            attn_sim_mse = nn.L1Loss()(attn[0:batch//2], attn[batch//2::]).mean()
-            loss = attn_sim_mse + cl_loss
+            # attn_sim_mse = nn.L1Loss()(attn[0:batch//2], attn[batch//2::]).mean()
+            loss = cl_loss
             return attn, loss
         else:
             return attn, torch.zeros_like(attn).sum()

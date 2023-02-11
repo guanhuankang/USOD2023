@@ -120,7 +120,7 @@ if __name__=="__main__":
     results = []
     for ckp in ckps:
         print(ckp, "...", flush=True)
-        r = testModel.test(tCfg, name=ckp, model=net, crf=1, save=True, checkpoint=ckp)
+        r = testModel.test(tCfg, name=ckp, model=net, crf=0, save=True, checkpoint=ckp)
         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
     pd.DataFrame(results).to_csv("output/results.csv")
     print(pd.DataFrame(results), flush=True)
