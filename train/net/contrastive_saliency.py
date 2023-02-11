@@ -49,8 +49,6 @@ class ContrastiveSaliency(nn.Module):
             nn.Conv2d(d_model//2, 1, 1), nn.Sigmoid()
         )
         self.g = PositionwiseFeedForward(d_model, d_ff)
-        weight_init(self.g)
-        weight_init(self.head)
 
     def forward(self, x, tau=0.1):
         batch, d_model, h, w = x.shape
