@@ -41,6 +41,9 @@ def train(cfg):
     tCfg = loadConfigByPath(cfg.datasetCfgPath)
     testResults = []
 
+    ## log
+    loss_avg = Avg()
+
     for epoch in range(cfg.epoch):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
@@ -56,6 +59,9 @@ def train(cfg):
             optimizer.step()
             torch.cuda.empty_cache()
 
+            ## avg
+            loss_avg.update(loss.item())
+
             ## log
             global_step += 1
             sw.add_scalar('lr'   , optimizer.param_groups[0]['lr'], global_step=global_step/tot_iter)
@@ -64,7 +70,7 @@ def train(cfg):
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
                 s = '{:.2f}% | step:{}/{} | lr={:1.5f} | loss={:1.6f} | elase={:1.1f}min | remain={:1.1f}min #'.format(
-                    global_step/tot_iter*100.0, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
+                    global_step/tot_iter*100.0, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss_avg(),
                     elase / 60, remain / 60
                 )
                 bar.bar_prefix = s
