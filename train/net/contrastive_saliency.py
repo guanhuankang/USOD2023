@@ -67,7 +67,7 @@ class ContrastiveSaliency(nn.Module):
             cl_loss = -torch.log(prob + 1e-6).mean()
 
             attn_sim_mse = nn.L1Loss()(attn[0:batch//2], attn[batch//2::]).mean()
-            l1loss = nn.L1Loss(attn, 0.5)
+            l1loss = 0.5 - torch.abs(attn-0.5)
             amoloss = torch.abs(attn.mean(), 0.30)
 
             loss = attn_sim_mse + cl_loss + l1loss + amoloss
