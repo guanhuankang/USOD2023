@@ -134,7 +134,7 @@ if __name__=="__main__":
     testModel = TestModel()
 
     testCfg = loadConfigByPath(cfg.datasetCfgPath)
-    ckp = "checkpoint/model-14-work.pth"
+    ckp = "checkpoint/model-40-other.pth"
     tCfgs = [testCfg.PASCAL_S, testCfg.DUTS, testCfg.DUT_OMRON, testCfg.ECSSD, testCfg.HKU_IS, testCfg.SOD, testCfg.MSRA_B]
     names = ["PASCAL-S", "DUTS", "DUT-O", "ECSSD", "HKU-IS", "SOD", "MSRA-B"]
     results = []
@@ -142,5 +142,5 @@ if __name__=="__main__":
         print(tCfg, ckp, flush=True)
         r = testModel.test(tCfg, name=name+"_"+ckp, model=net, crf=1, save=True, checkpoint=ckp)
         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
-    pd.DataFrame(results).to_csv("output/results.csv")
+    pd.DataFrame(results).to_csv("output/ti3_11G_results.csv")
     print(pd.DataFrame(results), flush=True)
