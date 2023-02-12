@@ -81,7 +81,7 @@ class TestModel:
         model.train(False)
         with torch.no_grad():
             for i,name in enumerate(name_list):
-                img = transform(Image.open(os.path.join(tCfg.image.path, name+tCfg.image.suffix))).unsqueeze(0)
+                img = transform(Image.open(os.path.join(tCfg.image.path, name+tCfg.image.suffix)).convert("RGB")).unsqueeze(0)
                 mak = np.array(Image.open(os.path.join(tCfg.mask.path, name+tCfg.mask.suffix)).convert("L")).astype(float) / 255.0
                 mak = torch.tensor(mak).unsqueeze(0).unsqueeze(0).gt(0.5).float()
 
@@ -134,9 +134,9 @@ if __name__=="__main__":
     testModel = TestModel()
 
     testCfg = loadConfigByPath(cfg.datasetCfgPath)
-    ckp = "checkpoint/model-21-other.pth"
-    tCfgs = [testCfg.DUTS, testCfg.DUT_OMRON, testCfg.ECSSD, testCfg.HKU_IS, testCfg.PASCAL_S, testCfg.SOD, testCfg.MSRA_B]
-    names = ["DUTS", "DUT-O", "ECSSD", "HKU-IS", "PASCAL-S", "SOD", "MSRA-B"]
+    ckp = "checkpoint/model-14-work.pth"
+    tCfgs = [testCfg.PASCAL_S, testCfg.DUTS, testCfg.DUT_OMRON, testCfg.ECSSD, testCfg.HKU_IS, testCfg.SOD, testCfg.MSRA_B]
+    names = ["PASCAL-S", "DUTS", "DUT-O", "ECSSD", "HKU-IS", "SOD", "MSRA-B"]
     results = []
     for name, tCfg in zip(names, tCfgs):
         print(tCfg, ckp, flush=True)
