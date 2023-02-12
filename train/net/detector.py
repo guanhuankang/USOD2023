@@ -22,6 +22,15 @@ def minMaxNorm(m, eps=1e-12):
 def uphw(x, size):
     return F.interpolate(x, size=size, mode="bilinear")
 
+def edgeLoss(p, grey, k=10.0):
+    y = torch.sigmoid(uphw(p, size=grey.shape[2::]))
+    kernel = torch.tensor([[-1,-1,-1],[-1,8.0,-1],[-1,-1,-1]], device=p.device, dtype=p.dtype).reshape(1,1,3,3)
+    edg = F.conv2d(y, kernel, padding=1)
+    grad = F.conv2d(grey, kernel, padding=1)
+    s = torch.abs(edg) * torch.exp(-k*torch.abs(grad))
+    loss = torch.sqrt(s * s + 1e-6)
+    return loss.mean()
+
 class R50FrcPN(nn.Module):
     def __init__(self, cfg):
         super().__init__()
@@ -33,6 +42,7 @@ class R50FrcPN(nn.Module):
             nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
             nn.Conv2d(256, 1, 1)
         )
+
         self.initialize()
         self.crf = CRF()
         self.lwt = LocalWindowTripleLoss(alpha=10.0)
@@ -49,10 +59,15 @@ class R50FrcPN(nn.Module):
         del f1; torch.cuda.empty_cache()
 
         if self.training:
-            sure_mask = (torch.abs(mask-0.5) > 0.49) * 1.0
+            sure_mask = (torch.abs(mask-0.5) > 0.45) * 1.0
             sure_bce = (F.binary_cross_entropy_with_logits(uphw(y, size=mask.shape[2::]), mask, reduction="none") * sure_mask).sum() / (sure_mask.sum() + 1e-6)
-            loss = sure_bce
-            sw.add_scalars("loss", {"sure_bce_loss": sure_bce.item(), "pred#": torch.sigmoid(y).mean().item()})
+            edg_loss = edgeLoss(y, torch.mean(minMaxNorm(x), dim=1, keepdim=True), k=10.0)
+            loss = sure_bce + edg_loss
+            sw.add_scalars("loss", {
+                "sure_bce_loss": sure_bce.item(),
+                "edge_loss": edg_loss.item(),
+                "pred#": torch.sigmoid(y).mean().item()
+            }, global_step=global_step)
 
         return {
             "loss": loss if self.training else 0.0,

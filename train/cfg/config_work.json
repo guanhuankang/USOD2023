@@ -23,6 +23,6 @@
   "momentum": 0.9,
   "weightDecay": 5e-4,
   "epoch": 20,
-  "epoch_lr_delay": 10,
+  "epoch_lr_delay": 5,
   "numWorkers": 2
 }
