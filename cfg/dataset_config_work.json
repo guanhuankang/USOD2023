@@ -55,13 +55,13 @@
         }
     },
     "MSRA-B": {
-        "root": "D:\\2023ICCVUSOD\\dataset\\MSRA-B",
+        "root": "D:\\2023ICCVUSOD\\dataset\\MSRA-B\\testset",
         "image": {
-            "path": "D:\\2023ICCVUSOD\\dataset\\MSRA-B\\image",
+            "path": "D:\\2023ICCVUSOD\\dataset\\MSRA-B\\testset\\images",
             "suffix": ".jpg"
         },
         "mask": {
-            "path": "D:\\2023ICCVUSOD\\dataset\\MSRA-B\\mask",
+            "path": "D:\\2023ICCVUSOD\\dataset\\MSRA-B\\testset\\masks",
             "suffix": ".png"
         }
     },

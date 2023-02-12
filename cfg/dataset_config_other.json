@@ -55,13 +55,13 @@
         }
     },
     "MSRA-B": {
-        "root": "/home/ti3/hkguan/dataset/sod/MSRA-B",
+        "root": "/home/ti3/hkguan/dataset/sod/MSRA-B/testset",
         "image": {
-            "path": "/home/ti3/hkguan/dataset/sod/MSRA-B/image",
+            "path": "/home/ti3/hkguan/dataset/sod/MSRA-B/testset/images",
             "suffix": ".jpg"
         },
         "mask": {
-            "path": "/home/ti3/hkguan/dataset/sod/MSRA-B/mask",
+            "path": "/home/ti3/hkguan/dataset/sod/MSRA-B/testset/masks",
             "suffix": ".png"
         }
     },

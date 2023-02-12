@@ -105,42 +105,42 @@ class TestModel:
         rep = self.report(name_now)
         self.clear()
         return rep
+#
+# if __name__=="__main__":
+#     from common import loadConfig, loadConfigByPath
+#     from network import Network
+#     cfg = loadConfig()
+#     tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS_TR
+#     net = Network(cfg).cuda()
+#     testModel = TestModel()
+#     print(tCfg, flush=True)
+#
+#     ckp_folder = ["checkpoint"]
+#     ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
+#     results = []
+#     for ckp in ckps:
+#         print(ckp, "...", flush=True)
+#         r = testModel.test(tCfg, name=ckp, model=net, crf=1, save=True, checkpoint=ckp)
+#         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
+#     pd.DataFrame(results).to_csv("output/results.csv")
+#     print(pd.DataFrame(results), flush=True)
+
 
 if __name__=="__main__":
     from common import loadConfig, loadConfigByPath
     from network import Network
     cfg = loadConfig()
-    tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS_TR
     net = Network(cfg).cuda()
     testModel = TestModel()
-    print(tCfg, flush=True)
 
-    ckp_folder = ["checkpoint"]
-    ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
+    testCfg = loadConfigByPath(cfg.datasetCfgPath)
+    ckp = "checkpoint/model-21-other.pth"
+    tCfgs = [testCfg.DUTS, testCfg.DUT_OMRON, testCfg.ECSSD, testCfg.HKU_IS, testCfg.PASCAL_S, testCfg.SOD, testCfg.MSRA_B]
+    names = ["DUTS", "DUT-O", "ECSSD", "HKU-IS", "PASCAL-S", "SOD", "MSRA-B"]
     results = []
-    for ckp in ckps:
-        print(ckp, "...", flush=True)
-        r = testModel.test(tCfg, name=ckp, model=net, crf=1, save=True, checkpoint=ckp)
+    for name, tCfg in zip(names, tCfgs):
+        print(tCfg, ckp, flush=True)
+        r = testModel.test(tCfg, name=name+" "+ckp, model=net, crf=1, save=True, checkpoint=ckp)
         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
     pd.DataFrame(results).to_csv("output/results.csv")
     print(pd.DataFrame(results), flush=True)
-
-
-# if __name__=="__main__":
-#     from common import loadConfig, loadConfigByPath
-#     from network import Network
-#     cfg = loadConfig()
-#     tCfg = loadConfigByPath(cfg.datasetCfgPath).DUTS
-#     net = Network(cfg).cuda()
-#     testModel = TestModel()
-#     print(tCfg, flush=True)
-#
-#     ckp_folder = ["A_checkpoint", "B_checkpoint"]
-#     ckps = [os.path.join(cf, ckp) for cf in ckp_folder for ckp in os.listdir(cf) if ckp.endswith(".pth")]
-#     results = []
-#     for ckp in ckps:
-#         print(ckp, "...", flush=True)
-#         r = testModel.test(tCfg, name=ckp, model=net, save=False, checkpoint=ckp)
-#         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
-#     pd.DataFrame(results).to_csv("output/results.csv")
-#     print(pd.DataFrame(results), flush=True)
