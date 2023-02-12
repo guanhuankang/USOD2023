@@ -140,7 +140,7 @@ if __name__=="__main__":
     results = []
     for name, tCfg in zip(names, tCfgs):
         print(tCfg, ckp, flush=True)
-        r = testModel.test(tCfg, name=name+" "+ckp, model=net, crf=1, save=True, checkpoint=ckp)
+        r = testModel.test(tCfg, name=name+"_"+ckp, model=net, crf=1, save=True, checkpoint=ckp)
         results.append( {"ckp": ckp} | r.head(1).to_dict("records")[0] )
     pd.DataFrame(results).to_csv("output/results.csv")
     print(pd.DataFrame(results), flush=True)
