@@ -13,4 +13,4 @@ export envname=burgundy
 echo "["+$envname+"] working dir:"
 pwd
 nvidia-smi
-python searcher.py
+python train.py
