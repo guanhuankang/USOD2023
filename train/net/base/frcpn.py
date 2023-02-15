@@ -58,5 +58,5 @@ class FPN(nn.Module):
         f4 = up2(self.conv5(f5)) + f4
         f3 = up2(self.conv4(f4)) + f3
         f2 = up2(self.conv3(f3)) + f2
-        f1 = up2(self.conv2(f2)) + f1
+        f1 = self.conv2(f2) + f1
         return [f5, f4, f3, f2, f1]
