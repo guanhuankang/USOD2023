@@ -2,12 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from net.base.modules import UnFold, weight_init
+from net.base.cbam import CBAM
 
 class FRC(nn.Module):
     def __init__(self, d_in, d_out):
         super().__init__()
         self.conv1 = nn.Sequential(nn.Conv2d(d_in, d_out, 1), nn.BatchNorm2d(d_out), nn.ReLU())
         self.conv2 = nn.Sequential(nn.Conv2d(d_out, d_out, 1), nn.BatchNorm2d(d_out), nn.ReLU())
+        self.cbam = CBAM(d_out)
         self.unfold = UnFold(3, padding=1)
         weight_init(self)
 
@@ -23,26 +25,28 @@ class FRC(nn.Module):
         mask = self.calcMask(ref)
         x = self.unfold(F.interpolate(self.conv1(x), size=ref.shape[2::], mode="nearest")) ## b,c,w_s,h,w
         x = torch.sum(x * mask, dim=2) / (torch.sum(mask, dim=2) + 1e-6)
-        return x + self.conv2(ref)
+        return self.cbam(x + self.conv2(ref))
 
 class FrcPN(nn.Module):
     '''
         Cross-Scale Feature Re-Coordinate Pyramid Network
     '''
-    def __init__(self, dim_bin = [2048, 1024, 512, 256, 64]):
+    def __init__(self):
         super().__init__()
-        self.frc = nn.ModuleList([ FRC(f_in, f_out) for f_in, f_out in zip(dim_bin[0:-2], dim_bin[1:-1]) ])
-        self.conv1 = nn.Sequential(nn.Conv2d(dim_bin[-2], dim_bin[-1], 1), nn.BatchNorm2d(dim_bin[-1]), nn.ReLU())
-        self.conv2 = nn.Sequential(nn.Conv2d(dim_bin[-1], dim_bin[-1], 1), nn.BatchNorm2d(dim_bin[-1]), nn.ReLU())
+        self.frc4 = FRC(2048, 1024)
+        self.frc3 = FRC(1024, 512)
+        self.frc2 = FRC(512, 256)
+        self.conv2 = nn.Sequential(nn.Conv2d(256, 64, 1), nn.BatchNorm2d(64), nn.ReLU())
+        self.conv1 = nn.Sequential(nn.Conv2d( 64, 64, 1), nn.BatchNorm2d(64), nn.ReLU())
+        self.cbam = CBAM(64)
 
     def forward(self, features):
-        ''' features: f5,f4,f3,f2,f1 '''
-        n = len(features)
-        out = [features[0],]
-        for i in range(n-2):
-            out.append(self.frc[i](out[-1], features[i+1]))
-        out.append( self.conv1(out[-1])+self.conv2(features[-1]) )
-        return out
+        f5, f4, f3, f2, f1 = features
+        f4 = self.frc4(f5, f4)
+        f3 = self.frc3(f4, f3)
+        f2 = self.frc2(f3, f2)
+        f1 = self.cbam(self.conv2(f2) + self.conv1(f1))
+        return [f5, f4, f3, f2, f1]
 
 class FPN(nn.Module):
     def __init__(self):

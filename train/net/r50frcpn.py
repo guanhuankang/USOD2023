@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from net.base.resnet50 import ResNet
-from net.base.frcpn import FPN
+from net.base.frcpn import FrcPN
 from net.contrastive_saliency import ContrastiveSaliency
 from net.base.modules import weight_init, CRF, LocalWindowTripleLoss
 
@@ -26,7 +26,7 @@ class R50FrcPN(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.backbone = ResNet(cfg.backboneWeight)
-        self.decoder = FPN()
+        self.decoder = FrcPN()
         self.conv = nn.Sequential(nn.Conv2d(2048, 512, 1), nn.BatchNorm2d(512), nn.ReLU())
         self.sal = ContrastiveSaliency(512, 8, 1024)
         self.head = nn.Sequential(
