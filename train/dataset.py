@@ -81,7 +81,8 @@ class Data(Dataset):
         return torch.stack(image,dim=0), uint8_img, shape, name
 
     def collate(self, batch):
-        # size = [224, 256, 288, 320, 352][-1]
+        # size = [224, 256, 288, 320, 352][np.random.randint(5)]
+        # size = (size, size)
         size = self.cfg.size
         image0, image1, mask = [list(item) for item in zip(*batch)]
 

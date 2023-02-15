@@ -51,7 +51,8 @@ class R50FrcPN(nn.Module):
         if self.training:
             sure_mask = (torch.abs(mask-0.5) > 0.49) * 1.0
             sure_bce = (F.binary_cross_entropy_with_logits(uphw(y, size=mask.shape[2::]), mask, reduction="none") * sure_mask).sum() / (sure_mask.sum() + 1e-6)
-            loss = sure_bce
+            lwt_loss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5)
+            loss = sure_bce + lwt_loss
             sw.add_scalars("loss", {"sure_bce_loss": sure_bce.item(), "pred#": torch.sigmoid(y).mean().item()})
 
         return {
