@@ -64,7 +64,8 @@ class ContrastiveSaliency(nn.Module):
             x = self.transform(x)
             mem = torch.flatten(x, -2, -1).permute(2, 0, 1)  ## hw,b,d
         # q = torch.sum(m * mem, dim=0, keepdim=True) ## 1,b,d
-        q = torch.max(mem, dim=0, keepdim=True)[0] ## 1,b,d
+        center = int(h//2 * w + w//2)
+        q = mem[center, :, :].unsqueeze(0) ## 1,b,d
         out, attn = self.multi_head(q, mem, mem) ## 1,b,d; b,1,hw
         attn = attn.reshape(batch, -1, h, w)
 
