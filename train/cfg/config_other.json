@@ -1,13 +1,13 @@
 {
   "datasetCfgPath": "../cfg/dataset_config_other.json",
   "snapShot": "",
-  "backboneWeight": "/home/ti3/hkguan/dataset/dino_resnet50_pretrain.pth",
+  "backboneWeight": "/home/ryn02/hkguan/dataset/dino_resnet50_pretrain.pth",
   "evalPath": "results/",
   "checkpointPath": "./checkpoint",
   "trainSet": "DUTS-TR",
   "testSet": "DUTS",
   "eventPath": "./event",
-  "salPath": "/home/ti3/hkguan/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Stage1-Vote",
+  "salPath": "/home/ryn02/hkguan/dataset/sod/DUTS/DUTS-TR/DUTS-TR-Stage1-Vote",
 
   "name": "other",
   "d_model": 512,
