@@ -43,3 +43,20 @@ class FrcPN(nn.Module):
             out.append(self.frc[i](out[-1], features[i+1]))
         out.append( self.conv1(out[-1])+self.conv2(features[-1]) )
         return out
+
+class FPN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv5 = nn.Sequential(nn.Conv2d(2048, 1024, 1), nn.BatchNorm2d(1024), nn.ReLU())
+        self.conv4 = nn.Sequential(nn.Conv2d(1024, 512, 1), nn.BatchNorm2d(512), nn.ReLU())
+        self.conv3 = nn.Sequential(nn.Conv2d(512, 256, 1), nn.BatchNorm2d(256), nn.ReLU())
+        self.conv2 = nn.Sequential(nn.Conv2d(256, 64, 1), nn.BatchNorm2d(64), nn.ReLU())
+
+    def forward(self, features):
+        up2 = lambda x: F.interpolate(x, scale_factor=2, mode="bilinear")
+        f5, f4, f3, f2, f1 = features
+        f4 = up2(self.conv5(f5)) + f4
+        f3 = up2(self.conv4(f4)) + f3
+        f2 = up2(self.conv3(f3)) + f2
+        f1 = up2(self.conv2(f2)) + f1
+        return [f5, f4, f3, f2, f1]
