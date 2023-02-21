@@ -27,16 +27,6 @@ class Data(Dataset):
     def __getstate__(self): return self.__dict__
     def __setstate__(self, d): self.__dict__.update(d)
 
-    def getRandAug(self, crop_size):
-        view_transform = DA.Compose(
-            [
-                DA.HorizontalFlip(p=0.5),
-                DA.RandomCrop(*crop_size),
-                DA.PixelDropout(dropout_prob=0.15, drop_value=127, p=0.5)
-            ]
-        )
-        return view_transform
-
     def __getitem__(self, idx):
         image_transform = pth_transforms.Compose([
             pth_transforms.ToTensor(),
@@ -51,14 +41,28 @@ class Data(Dataset):
         mask = Image.open(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix)).convert("L")
 
         if self.cfg.mode=='train':
-            getRandSize = lambda a: int(a * (np.random.rand()*0.05+0.95))
-            crop_size = (getRandSize(mask.size[1]), getRandSize(mask.size[0]))
-            aug = self.getRandAug(crop_size)
+            w, h = mask.size
+            getRandSize = lambda a, r: int(a * (np.random.rand()*(1-r)+r))
 
-            aug0 = aug(image=np.array(image, dtype=np.uint8), mask=np.array(mask, dtype=np.uint8))
-            aug1 = aug(image=np.array(image, dtype=np.uint8), mask=np.array(mask, dtype=np.uint8))
-            img0, mak0 = image_transform(Image.fromarray(aug0["image"])), mask_transform(Image.fromarray(aug0["mask"]))
-            img1, mak1 = image_transform(Image.fromarray(aug1["image"])), mask_transform(Image.fromarray(aug1["mask"]))
+            aug_transform = DA.Compose(
+                [
+                    DA.HorizontalFlip(p=0.5),
+                    DA.RandomCrop(getRandSize(h, 0.8), getRandSize(w, 0.8))
+                ]
+            )
+
+            aug = aug_transform(image=np.array(image, dtype=np.uint8), mask=np.array(mask, dtype=np.uint8))
+            img0, mak0 = image_transform(Image.fromarray(aug["image"])), mask_transform(Image.fromarray(aug["mask"]))
+
+            new_aug_transform = DA.Compose(
+                [
+                    DA.PixelDropout(dropout_prob=0.15, drop_value=127, p=0.5),
+                    DA.ToGray(p=0.5)
+                ]
+            )
+            new_aug = new_aug_transform(image=np.array(image, dtype=np.uint8), mask=np.array(mask, dtype=np.uint8))
+            img1, mak1 = image_transform(Image.fromarray(new_aug["image"])), mask_transform(Image.fromarray(new_aug["mask"]))
+
             return img0, img1, mak0, mak1
         else:
             test_transform = pth_transforms.Compose([

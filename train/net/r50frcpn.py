@@ -64,9 +64,9 @@ class R50FrcPN(nn.Module):
                 loss += bceloss
             if alpha_other>1e-3:
                 lwtloss = self.lwt(torch.sigmoid(y), minMaxNorm(x), margin=0.5); loss_dict.update({"lwt_loss": lwtloss.item()})
-                # consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
+                consloss = F.l1_loss(torch.sigmoid(y[0:N]), torch.sigmoid(y[N::])); loss_dict.update({"cons_loss": consloss.item()})
                 uncerloss = 0.5 - torch.abs(torch.sigmoid(y) - 0.5).mean(); loss_dict.update({"uncertain_loss": uncerloss.item()})
-                loss += lwtloss * w[0] + uncerloss * w[1]
+                loss += lwtloss * w[0] + uncerloss * w[1] + consloss * w[2]
 
             loss_dict.update({"tot_loss": loss.item()})
             if "sw" in kwargs:
