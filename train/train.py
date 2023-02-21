@@ -76,6 +76,7 @@ def train(cfg):
                     )
                     bar.text(s)
                     bar()
+                    print(s, flush=True, end="\r")
 
         ## epoch end/ start epoch test
         scheduler.step()

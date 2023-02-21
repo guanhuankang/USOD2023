@@ -149,6 +149,7 @@ class CRF(nn.Module):
     def refine(self, img, labels, iters, gt_prob=0.5, n_labels=2, smooth=False):
         if smooth:
             labels = skimage.filters.gaussian(labels, 0.02*max(img.shape[:2]))
+            labels = (labels - labels.min()) / (labels.max() - labels.min() + 1e-9)
             labels = np.ascontiguousarray(labels)
         h,w = img.shape[:2]
         d = dcrf.DenseCRF2D(w, h, 2)
