@@ -93,3 +93,17 @@ def upx2(m):
 
 def minMaxNorm(m, eps=1e-12):
     return (m - min2D(m)) / (max2D(m) - min2D(m) + eps)
+
+class Avg:
+    def __init__(self):
+        self.records = []
+
+    def __len__(self):
+        return len(self.records)
+
+    def update(self, v):
+        self.records.append(v)
+        return self(len(self))
+
+    def __call__(self, n = 100):
+        return sum(self.records[-n::]) / min(n, len(self))

@@ -16,6 +16,7 @@ from common import *
 from network import Network
 from loader import Loader
 from testmodel import TestModel
+from progress.bar import Bar
 
 def train(cfg):
     cfg.mode = "train"
@@ -40,10 +41,13 @@ def train(cfg):
     ## testmodel
     tCfg = loadConfigByPath(cfg.datasetCfgPath)
     testResults = []
+    ## avg
+    loss_avg = Avg()
 
     for epoch in range(cfg.epoch):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
+        bar = Bar(max=len(loader))
         net.train(True)
         for step, (image, mask) in enumerate(loader):
             optimizer.zero_grad()
@@ -59,13 +63,20 @@ def train(cfg):
             global_step += 1
             sw.add_scalar('lr'   , optimizer.param_groups[0]['lr'], global_step=global_step/tot_iter)
             sw.add_scalars('loss', {"visible_loss":loss.item()}, global_step=global_step/tot_iter)
-            if step%10 == 0:
+
+            ## avg
+            loss_avg.update(loss.item())
+
+            if True:
                 elase = time.time() - clock_begin
                 remain = elase/global_step * tot_iter - elase
-                print('%s | %.2f%% | step:%d/%d/%d | lr=%.6f | loss=%.6f | elase=%.1fmin | remain=%.1fmin'
-                    %(datetime.datetime.now(), global_step/tot_iter*100.0, global_step, epoch+1, cfg.epoch, optimizer.param_groups[0]['lr'], loss.item(),
-                      elase / 60, remain / 60), flush=True
+                s = '{:.2f}% | step:{}/{} | lr={:1.5f} | loss={:1.6f} | elase={:1.1f}min | remain={:1.1f}min #'.format(
+                    global_step / tot_iter * 100.0, epoch + 1, cfg.epoch, optimizer.param_groups[0]['lr'], loss_avg(),
+                    elase / 60, remain / 60
                 )
+                bar.bar_prefix = s
+            bar.next()
+
         ## epoch end/ start epoch test
         scheduler.step()
         if epoch>=0:
