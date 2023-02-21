@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import skimage
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_labels
 from pydensecrf.utils import unary_from_softmax
@@ -145,7 +146,10 @@ class CRF(nn.Module):
         self.srgb_b = srgb_b
         self.compat_b = compat_b
 
-    def refine(self, img, labels, iters, gt_prob=0.5, n_labels=2):
+    def refine(self, img, labels, iters, gt_prob=0.5, n_labels=2, smooth=False):
+        if smooth:
+            labels = skimage.filters.gaussian(labels, 0.02*max(img.shape[:2]))
+            labels = np.ascontiguousarray(labels)
         h,w = img.shape[:2]
         d = dcrf.DenseCRF2D(w, h, 2)
         # unary = unary_from_labels(labels, n_labels, gt_prob=gt_prob, zero_unsure=False)
@@ -157,13 +161,13 @@ class CRF(nn.Module):
         res = infer[0, :].reshape(h, w)
         return res
 
-    def forward(self, img, pred, iters=5):
+    def forward(self, img, pred, iters=5, smooth=False):
         assert img.shape[2::]==pred.shape[2::]
         img_np = (img.detach().cpu().permute(0,2,3,1).numpy()*255).astype(np.uint8) ## b,h,w,c
         pred_np = pred.detach().cpu().squeeze(1).numpy().astype(np.float32) ## b,h,w
         crf_results = []
         for i in range(len(img_np)):
-            res = self.refine(np.ascontiguousarray(img_np[i]), np.ascontiguousarray(pred_np[i]), iters=iters)
+            res = self.refine(np.ascontiguousarray(img_np[i]), np.ascontiguousarray(pred_np[i]), iters=iters, smooth=smooth)
             crf_results.append(torch.tensor(res, dtype=img.dtype, device=img.device).unsqueeze(0))
         return torch.stack(crf_results, dim=0) ## b,1,h,w
 

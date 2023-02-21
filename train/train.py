@@ -16,7 +16,7 @@ from common import *
 from network import Network
 from loader import Loader
 from testmodel import TestModel
-from progress.bar import Bar
+from alive_progress import alive_bar
 
 def train(cfg):
     cfg.mode = "train"
@@ -47,35 +47,35 @@ def train(cfg):
     for epoch in range(cfg.epoch):
         # optimizer.param_groups[0]['lr'] = (1.0 - (epoch / cfg.epoch)**0.9) * cfg.lr
         print("epoch:", epoch, " # dataset len:", len(loader), flush=True)
-        bar = Bar(max=len(loader))
         net.train(True)
-        for step, (image, mask) in enumerate(loader):
-            optimizer.zero_grad()
-            image, mask = image.cuda().float(), mask.cuda().float()
-            out = net(image, global_step=global_step/tot_iter, sw=sw, epoches=cfg.epoch)
-            loss = out["loss"]
+        with alive_bar(len(loader)) as bar:
+            for step, (image, mask) in enumerate(loader):
+                optimizer.zero_grad()
+                image, mask = image.cuda().float(), mask.cuda().float()
+                out = net(image, global_step=global_step/tot_iter, sw=sw, epoches=cfg.epoch)
+                loss = out["loss"]
 
-            loss.backward()
-            optimizer.step()
-            torch.cuda.empty_cache()
+                loss.backward()
+                optimizer.step()
+                torch.cuda.empty_cache()
 
-            ## log
-            global_step += 1
-            sw.add_scalar('lr'   , optimizer.param_groups[0]['lr'], global_step=global_step/tot_iter)
-            sw.add_scalars('loss', {"visible_loss":loss.item()}, global_step=global_step/tot_iter)
+                ## log
+                global_step += 1
+                sw.add_scalar('lr'   , optimizer.param_groups[0]['lr'], global_step=global_step/tot_iter)
+                sw.add_scalars('loss', {"visible_loss":loss.item()}, global_step=global_step/tot_iter)
 
-            ## avg
-            loss_avg.update(loss.item())
+                ## avg
+                loss_avg.update(loss.item())
 
-            if True:
-                elase = time.time() - clock_begin
-                remain = elase/global_step * tot_iter - elase
-                s = '{:.2f}% | step:{}/{} | lr={:1.5f} | loss={:1.6f} | elase={:1.1f}min | remain={:1.1f}min #'.format(
-                    global_step / tot_iter * 100.0, epoch + 1, cfg.epoch, optimizer.param_groups[0]['lr'], loss_avg(),
-                    elase / 60, remain / 60
-                )
-                bar.bar_prefix = s
-            bar.next()
+                if True:
+                    elase = time.time() - clock_begin
+                    remain = elase/global_step * tot_iter - elase
+                    s = '{:.2f}% | step:{}/{} | lr={:1.5f} | loss={:1.6f} | elase={:1.1f}min | remain={:1.1f}min #'.format(
+                        global_step / tot_iter * 100.0, epoch + 1, cfg.epoch, optimizer.param_groups[0]['lr'], loss_avg(),
+                        elase / 60, remain / 60
+                    )
+                    bar.text(s)
+                    bar()
 
         ## epoch end/ start epoch test
         scheduler.step()
