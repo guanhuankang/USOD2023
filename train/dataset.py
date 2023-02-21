@@ -31,7 +31,8 @@ class Data(Dataset):
         view_transform = DA.Compose(
             [
                 DA.HorizontalFlip(p=0.5),
-                DA.RandomCrop(*crop_size)
+                DA.RandomCrop(*crop_size),
+                DA.PixelDropout(dropout_prob=0.15, drop_value=127, p=0.5)
             ]
         )
         return view_transform
@@ -50,7 +51,8 @@ class Data(Dataset):
         mask = Image.open(os.path.join(self.datasetCfg.mask.path, name + self.datasetCfg.mask.suffix)).convert("L")
 
         if self.cfg.mode=='train':
-            crop_size = tuple([int(min(mask.size) * (np.random.rand() * 0.2 + 0.8))]*2)
+            getRandSize = lambda a: int(a * (np.random.rand()*0.05+0.95))
+            crop_size = (getRandSize(mask.size[1]), getRandSize(mask.size[0]))
             aug = self.getRandAug(crop_size)
 
             aug0 = aug(image=np.array(image, dtype=np.uint8), mask=np.array(mask, dtype=np.uint8))
