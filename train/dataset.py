@@ -60,7 +60,7 @@ class Data(Dataset):
                     DA.ToGray(p=0.5)
                 ]
             )
-            new_aug = new_aug_transform(image=np.array(image, dtype=np.uint8), mask=np.array(mask, dtype=np.uint8))
+            new_aug = new_aug_transform(image=np.array(img0, dtype=np.uint8), mask=np.array(mak0, dtype=np.uint8))
             img1, mak1 = image_transform(Image.fromarray(new_aug["image"])), mask_transform(Image.fromarray(new_aug["mask"]))
 
             return img0, img1, mak0, mak1
