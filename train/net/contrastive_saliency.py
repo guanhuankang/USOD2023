@@ -65,8 +65,9 @@ class ContrastiveSaliency(nn.Module):
             mem = torch.flatten(x, -2, -1).permute(2, 0, 1)  ## hw,b,d
         # q = torch.sum(m * mem, dim=0, keepdim=True) ## 1,b,d
         q = torch.mean(mem, dim=0, keepdim=True) ## 1,b,d
-        out, attn = self.multi_head(q, mem, mem) ## 1,b,d; b,1,hw
+        _, attn = self.multi_head(q, mem, mem) ## 1,b,d; b,1,hw
         attn = attn.reshape(batch, -1, h, w)
+        out = torch.sum(attn * mem.permute(1,2,0).reshape(batch, -1, h, w), dim=[-1,-2]).unsqueeze(0) ## 1,b,d
 
         if self.training:
             y = F.normalize(self.g(out), p=2, dim=-1)  ## nq,batch,d_model
