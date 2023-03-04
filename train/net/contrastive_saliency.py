@@ -44,30 +44,31 @@ class QSelection(nn.Module):
 class ContrastiveSaliency(nn.Module):
     def __init__(self, d_model, n_head, d_ff):
         super().__init__()
-        # self.qs = QSelection(d_model)
-        self.transform = {
-            "enc": nn.TransformerEncoderLayer(d_model, n_head, dim_feedforward=d_ff),
-            "conv+LN": nn.Sequential(nn.Conv2d(d_model, d_model, 1), LayerNorm2D(d_model), nn.ReLU()),
-            "none": nn.Identity()
-        }[KEY]
+        self.conv = nn.Sequential(nn.Conv2d(2048, d_model, 1), nn.BatchNorm2d(d_model), nn.ReLU())
+        self.transform = nn.Sequential(nn.Conv2d(d_model, d_model, 1), LayerNorm2D(d_model), nn.ReLU())
+        self.conv_value = nn.Sequential(nn.Conv2d(d_model, d_model, 1), nn.BatchNorm2d(d_model), nn.ReLU())
         self.multi_head = nn.MultiheadAttention(d_model, n_head)
         self.g = PositionwiseFeedForward(d_model, d_ff)
+        self.initialize()
+
+    def initialize(self):
         weight_init(self.g)
+        weight_init(self.conv)
+        weight_init(self.transform)
+        weight_init(self.conv_value)
 
     def forward(self, x, tau=0.1):
-        batch, d_model, h, w = x.shape
         # m = torch.softmax(self.qs(x).flatten(-2,-1), dim=-1).permute(2,0,1) ## hw,b,1
-        if KEY=="enc":
-            x = torch.flatten(x, -2, -1).permute(2, 0, 1) ## hw,b,d
-            mem = self.transform(x)
-        else:
-            x = self.transform(x)
-            mem = torch.flatten(x, -2, -1).permute(2, 0, 1)  ## hw,b,d
-        # q = torch.sum(m * mem, dim=0, keepdim=True) ## 1,b,d
+        batch, d_model, h, w = x.shape
+        x = self.conv(x)
+
+        mem = torch.flatten(self.transform(x), -2, -1).permute(2, 0, 1)  ## hw,b,d
+        value = self.conv_value(x)
+
         q = torch.mean(mem, dim=0, keepdim=True) ## 1,b,d
         _, attn = self.multi_head(q, mem, mem) ## 1,b,d; b,1,hw
         attn = attn.reshape(batch, -1, h, w)
-        out = torch.sum(attn * mem.permute(1,2,0).reshape(batch, -1, h, w), dim=[-1,-2]).unsqueeze(0) ## 1,b,d
+        out = torch.sum(attn * value, dim=[-1,-2]).unsqueeze(0) ## 1,b,d
 
         if self.training:
             y = F.normalize(self.g(out), p=2, dim=-1)  ## nq,batch,d_model

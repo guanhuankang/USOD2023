@@ -27,7 +27,6 @@ class R50FrcPN(nn.Module):
         super().__init__()
         self.backbone = ResNet(cfg.backboneWeight)
         self.decoder = FrcPN(dim_bin=[2048,1024,512,256,64])
-        self.conv = nn.Sequential(nn.Conv2d(2048, 512, 1), nn.BatchNorm2d(512), nn.ReLU())
         self.sal = ContrastiveSaliency(512, 8, 1024)
         self.head = nn.Sequential(
             nn.Conv2d(64, 256, 1), nn.BatchNorm2d(256), nn.ReLU(),
@@ -38,14 +37,14 @@ class R50FrcPN(nn.Module):
         self.lwt = LocalWindowTripleLoss(alpha=10.0)
 
     def initialize(self):
-        weight_init(self.conv)
+        # weight_init(self.conv)
         weight_init(self.head)
 
     def forward(self, x, global_step=0.0, **kwargs):
         f1, f2, f3, f4, f5 = self.backbone(x)
         f5, f4, f3, f2, f1 = self.decoder([f5, f4, f3, f2, f1])
         del f2,f3,f4; torch.cuda.empty_cache()
-        attn, loss = self.sal(self.conv(f5))
+        attn, loss = self.sal(f5)
         y = self.head(f1)
         del f1, f5; torch.cuda.empty_cache()
 

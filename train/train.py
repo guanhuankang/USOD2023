@@ -31,7 +31,7 @@ def train(cfg):
     net.cuda()
     ## optimizer & logger
     optimizer = torch.optim.SGD(net.parameters(), lr=cfg.lr, momentum=cfg.momentum, weight_decay=cfg.weightDecay)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.epoch_lr_delay, gamma=0.5)
     sw = SummaryWriter(cfg.eventPath)
     ## parameter
     global_step = 0
